@@ -1,0 +1,7 @@
+# Project exclude paths
+.gradle/
+build/
+captures/
+gradle_bin/
+*.zip
+*.jar

@@ -1,0 +1,27 @@
+{
+    "config": {
+        "intervaloJornadaDias": 7,
+        "fechaInicio": "2026-03-12",
+        "nombreRanking": "Ranking de Tenis",
+        "autoGenerarJornadas": false
+    },
+    "jugadores": [],
+    "jornadas": [
+        {
+            "id": 1,
+            "nombre": "Jornada 1",
+            "fechaInicio": "2026-03-26",
+            "fechaFin": "2026-04-02",
+            "estado": "en_curso"
+        },
+        {
+            "id": 2,
+            "nombre": "Jornada 2",
+            "fechaInicio": "2026-03-26",
+            "fechaFin": "2026-04-02",
+            "estado": "en_curso"
+        }
+    ],
+    "partidos": [],
+    "sets": []
+}

@@ -1,0 +1,147 @@
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :convertXmlValueResourcesForMain NO-SOURCE
+> Task :copyNonXmlValueResourcesForMain NO-SOURCE
+> Task :prepareComposeResourcesTaskForMain NO-SOURCE
+> Task :generateResourceAccessorsForMain SKIPPED
+> Task :generateActualResourceCollectorsForMain SKIPPED
+> Task :generateComposeResClass SKIPPED
+> Task :compileKotlin UP-TO-DATE
+> Task :compileJava NO-SOURCE
+> Task :assembleMainResources UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jar UP-TO-DATE
+> Task :prepareAppResources NO-SOURCE
+
+> Task :run FAILED
+Exception in thread "AWT-EventQueue-0" java.lang.IllegalStateException: Module with the Main dispatcher is missing. Add dependency providing the Main dispatcher, e.g. 'kotlinx-coroutines-android' and ensure it has the same version as 'kotlinx-coroutines-core'
+	at kotlinx.coroutines.internal.MainDispatchersKt.throwMissingMainDispatcherException(MainDispatchers.kt:77)
+	at kotlinx.coroutines.internal.MissingMainCoroutineDispatcher.missing(MainDispatchers.kt:108)
+	at kotlinx.coroutines.internal.MissingMainCoroutineDispatcher.isDispatchNeeded(MainDispatchers.kt:92)
+	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:299)
+	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:26)
+	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:358)
+	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:124)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:52)
+	at kotlinx.coroutines.BuildersKt.launch(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:43)
+	at kotlinx.coroutines.BuildersKt.launch$default(Unknown Source)
+	at com.tennis.server.viewmodel.AppViewModel.<init>(AppViewModel.kt:39)
+	at com.tennis.server.ComposableSingletons$MainKt$lambda$1299260841$1.invoke(Main.kt:14)
+	at com.tennis.server.ComposableSingletons$MainKt$lambda$1299260841$1.invoke(Main.kt:13)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:116)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.ui.window.Application_desktopKt$application$1$1.invoke(Application.desktop.kt:117)
+	at androidx.compose.ui.window.Application_desktopKt$application$1$1.invoke(Application.desktop.kt:116)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:116)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1$1.invoke(Application.desktop.kt:233)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1$1.invoke(Application.desktop.kt:232)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:107)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.runtime.CompositionLocalKt.CompositionLocalProvider(CompositionLocal.kt:380)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1.invoke(Application.desktop.kt:223)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1.invoke(Application.desktop.kt:221)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:107)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.runtime.ActualJvm_jvmKt__ActualJvm_jvmKt.invokeComposable(ActualJvm.jvm.kt:36)
+	at androidx.compose.runtime.ActualJvm_jvmKt.invokeComposable(Unknown Source)
+	at androidx.compose.runtime.ComposerImpl.doCompose(Composer.kt:3595)
+	at androidx.compose.runtime.ComposerImpl.composeContent$runtime(Composer.kt:3522)
+	at androidx.compose.runtime.CompositionImpl.composeContent(Composition.kt:743)
+	at androidx.compose.runtime.Recomposer.composeInitial$runtime(Recomposer.kt:1122)
+	at androidx.compose.runtime.CompositionImpl.composeInitial(Composition.kt:649)
+	at androidx.compose.runtime.CompositionImpl.setContent(Composition.kt:635)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2.invokeSuspend(Application.desktop.kt:221)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:773)
+	at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:720)
+	at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:714)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:399)
+	at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:86)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:742)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+	Suppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@2c577a10, Dispatchers.Main[missing]]
+Exception in thread "main" java.lang.IllegalStateException: Module with the Main dispatcher is missing. Add dependency providing the Main dispatcher, e.g. 'kotlinx-coroutines-android' and ensure it has the same version as 'kotlinx-coroutines-core'
+	at kotlinx.coroutines.internal.MainDispatchersKt.throwMissingMainDispatcherException(MainDispatchers.kt:77)
+	at kotlinx.coroutines.internal.MissingMainCoroutineDispatcher.missing(MainDispatchers.kt:108)
+	at kotlinx.coroutines.internal.MissingMainCoroutineDispatcher.isDispatchNeeded(MainDispatchers.kt:92)
+	at kotlinx.coroutines.internal.DispatchedContinuationKt.resumeCancellableWith(DispatchedContinuation.kt:299)
+	at kotlinx.coroutines.intrinsics.CancellableKt.startCoroutineCancellable(Cancellable.kt:26)
+	at kotlinx.coroutines.CoroutineStart.invoke(CoroutineStart.kt:358)
+	at kotlinx.coroutines.AbstractCoroutine.start(AbstractCoroutine.kt:124)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch(Builders.common.kt:52)
+	at kotlinx.coroutines.BuildersKt.launch(Unknown Source)
+	at kotlinx.coroutines.BuildersKt__Builders_commonKt.launch$default(Builders.common.kt:43)
+	at kotlinx.coroutines.BuildersKt.launch$default(Unknown Source)
+	at com.tennis.server.viewmodel.AppViewModel.<init>(AppViewModel.kt:39)
+	at com.tennis.server.ComposableSingletons$MainKt$lambda$1299260841$1.invoke(Main.kt:14)
+	at com.tennis.server.ComposableSingletons$MainKt$lambda$1299260841$1.invoke(Main.kt:13)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:116)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.ui.window.Application_desktopKt$application$1$1.invoke(Application.desktop.kt:117)
+	at androidx.compose.ui.window.Application_desktopKt$application$1$1.invoke(Application.desktop.kt:116)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:116)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1$1.invoke(Application.desktop.kt:233)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1$1.invoke(Application.desktop.kt:232)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:107)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.runtime.CompositionLocalKt.CompositionLocalProvider(CompositionLocal.kt:380)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1.invoke(Application.desktop.kt:223)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2$1.invoke(Application.desktop.kt:221)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:107)
+	at androidx.compose.runtime.internal.ComposableLambdaImpl.invoke(ComposableLambda.jb.kt:33)
+	at androidx.compose.runtime.ActualJvm_jvmKt__ActualJvm_jvmKt.invokeComposable(ActualJvm.jvm.kt:36)
+	at androidx.compose.runtime.ActualJvm_jvmKt.invokeComposable(Unknown Source)
+	at androidx.compose.runtime.ComposerImpl.doCompose(Composer.kt:3595)
+	at androidx.compose.runtime.ComposerImpl.composeContent$runtime(Composer.kt:3522)
+	at androidx.compose.runtime.CompositionImpl.composeContent(Composition.kt:743)
+	at androidx.compose.runtime.Recomposer.composeInitial$runtime(Recomposer.kt:1122)
+	at androidx.compose.runtime.CompositionImpl.composeInitial(Composition.kt:649)
+	at androidx.compose.runtime.CompositionImpl.setContent(Composition.kt:635)
+	at androidx.compose.ui.window.Application_desktopKt$awaitApplication$2$1$2.invokeSuspend(Application.desktop.kt:221)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:318)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(EventQueue.java:773)
+	at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:720)
+	at java.desktop/java.awt.EventQueue$4.run(EventQueue.java:714)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:399)
+	at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:86)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(EventQueue.java:742)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:203)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:124)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:113)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:109)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)
+	at java.desktop/java.awt.EventDispatchThread.run(EventDispatchThread.java:90)
+	Suppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelled}@2c577a10, Dispatchers.Main[missing]]
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':run'.
+> Process 'command 'C:\Program Files\Java\jdk-18.0.2.1\bin\java.exe'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 2s
+5 actionable tasks: 1 executed, 4 up-to-date
