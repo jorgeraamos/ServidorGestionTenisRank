@@ -1,8 +1,14 @@
 {
     "config": {
         "intervaloJornadaDias": 7,
-        "fechaInicio": "2026-03-12",
-        "nombreRanking": "Ranking de Tenis",
+        "fechaInicio": "",
+        "selectedRanking": {
+            "id": 1,
+            "nombre": "Ranking UPM",
+            "ciudad": "Madrid",
+            "municipio": "Montepríncipe\n"
+        },
+        "selectedEdicion": null,
         "autoGenerarJornadas": false
     },
     "jugadores": [],

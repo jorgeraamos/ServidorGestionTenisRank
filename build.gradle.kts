@@ -32,6 +32,9 @@ dependencies {
     val ktorVersion = "3.0.0"
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
+
+    // Librería para la implementación el cálculo de los enfrentamientos
+    implementation("org.jgrapht:jgrapht-core:1.5.2")
 }
 
 compose.desktop {

@@ -1,8 +1,10 @@
 package com.tennis.server.viewmodel
 
 import com.tennis.server.data.DataRepository
+import com.tennis.server.data.getAllParticipantes
 import com.tennis.server.data.getAllRankings
 import com.tennis.server.engine.MatchEngine
+import com.tennis.server.engine.MatchEngine.generarEmparejamientos
 import com.tennis.server.model.*
 import com.tennis.server.scheduler.JornadaScheduler
 import kotlinx.coroutines.CoroutineScope
@@ -131,34 +133,53 @@ class AppViewModel {
      */
     fun generarJornada() {
         val current = _appData.value
-        val number = current.jornadas.size + 1 // Determina si es la Jornada 1, 2, 3...
-        
-        // Define el objeto de la nueva jornada
-        val newJornada = Jornada(
-            id = number,
-            nombre = "Jornada $number",
-            fechaInicio = LocalDate.now().toString(),
-            // La fecha final es "hoy + N días de intervalo"
-            fechaFin = LocalDate.now().plusDays(current.config.intervaloJornadaDias.toLong()).toString(),
-            estado = "en_curso"
-        )
-        
-        log("Generando emparejamientos para ${newJornada.nombre} (Modo Demo)")
-        
-        // --- LLAMADA AL ALGORITMO DE EMPAREJAMIENTO ---
-        val partidos = MatchEngine.generarEmparejamientos(current.jugadores, newJornada)
-        
-        if (partidos.isEmpty() && current.jugadores.isNotEmpty()) {
-            log("AVISO DEMO: MatchEngine devolvió lista vacía de partidos. Falta implementar algoritmo.")
+        val edicionActual = current.config.selectedEdicion
+
+        if (edicionActual == null) {
+            log("ERROR: No hay una edición seleccionada para generar partidos.")
+            return
         }
 
-        // Incorpora la jornada y sus nuevos partidos al estado global combinado
-        _appData.value = current.copy(
-            jornadas = current.jornadas + newJornada,
-            partidos = current.partidos + partidos
-        )
-        saveData() // Se persiste el cambio completo (jornada + partidos) en el JSON
-        log("Jornada $number creada exitosamente")
+        scope.launch {
+            try {
+                log("Obteniendo participantes y puntos para la edición: ${edicionActual.nombre}...")
+
+                //  Llamamos a la función que obtiene a los participantes desde supabase
+                val participantes = getAllParticipantes(edicionActual.id)
+
+                if (participantes.isEmpty()) {
+                    log("ERROR: No hay participantes inscritos en esta edición.")
+                    return@launch
+                }
+
+                // Definimos la nueva jornada
+                val number = current.jornadas.size + 1
+                val newJornada = Jornada(
+                    id = number,
+                    nombre = "Jornada $number",
+                    fechaInicio = LocalDate.now().toString(),
+                    fechaFin = LocalDate.now().plusDays(current.config.intervaloJornadaDias.toLong()).toString(),
+                    estado = "en_curso"
+                )
+
+                log("Ejecutando algoritmo de emparejamiento con ${participantes.size} jugadores...")
+
+                // Llamamos a la función de generación de los emparejamientos
+                val partidos = generarEmparejamientos(participantes, newJornada)
+
+                // 4. Actualizamos el estado global
+                _appData.value = current.copy(
+                    jornadas = current.jornadas + newJornada,
+                    partidos = current.partidos + partidos
+                )
+
+                saveData()
+                log("Jornada $number creada con éxito mediante optimización de Elo.")
+
+            } catch (e: Exception) {
+                log("Error en el proceso de emparejamiento: ${e.message}")
+            }
+        }
     }
 
     fun clearLogs() {
