@@ -60,7 +60,7 @@ suspend fun getAllEdiciones(rankingId: Int): List<Edicion> {
 suspend fun getAllParticipantes(edicionId: Int): List<Participante> {
     return try {
         val response = client.postgrest["participa"]
-            .select(Columns.raw("id_jugador,puntos")) {
+            .select(Columns.raw("id_jugador,puntos,historial_rivales")) {
                 filter {
                     eq("id_edicion", edicionId)
                 }
