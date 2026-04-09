@@ -1,5 +1,7 @@
 package com.tennis.server.engine
 
+import com.tennis.server.data.actualizarHistorialRivales
+import com.tennis.server.model.Edicion
 import com.tennis.server.model.Jornada
 import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
@@ -74,6 +76,7 @@ object MatchEngine {
         // utilizando la función de Blossom V que viene dada en la librería de jgrapht
         val algoritmo = KolmogorovWeightedPerfectMatching(grafo)
         val matching = algoritmo.matching
+
 
         // Una vez tenemos el matching, procedemos a generar los partidos:
         return matching.edges.mapNotNull {edge ->

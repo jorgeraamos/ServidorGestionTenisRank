@@ -3,6 +3,7 @@ package com.tennis.server.viewmodel
 import com.tennis.server.data.DataRepository
 import com.tennis.server.data.getAllParticipantes
 import com.tennis.server.data.getAllRankings
+import com.tennis.server.data.insertPartidos
 import com.tennis.server.engine.MatchEngine
 import com.tennis.server.engine.MatchEngine.generarEmparejamientos
 import com.tennis.server.model.*
@@ -106,6 +107,28 @@ class AppViewModel {
                 log("Rankings cargados: ${rankings.size} encontrados")
             } catch (e: Exception) {
                 log("Error al cargar rankings: ${e.message}")
+            }
+        }
+    }
+
+
+    // Función para generar los partidos y guardarlos en Supabase:
+    fun generarYGuardarNuevaJornada(
+        participantes: List<Participante>,
+        jornada: Jornada,
+        edicionId: Int
+    ) {
+        scope.launch {
+            try {
+                // Calculamos los emparejamientos
+                val partidos = generarEmparejamientos(participantes, jornada)
+
+                // Insertamos los partidos en la base de datos
+                insertPartidos(partidos, edicionId)
+
+            } catch (e: Exception) {
+                // Manejo de errores (mostrar un Toast o un SnackBar)
+                println("Error al procesar la jornada: ${e.message}")
             }
         }
     }
