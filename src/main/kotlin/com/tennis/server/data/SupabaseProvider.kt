@@ -71,3 +71,32 @@ suspend fun getAllParticipantes(edicionId: Int): List<Participante> {
         emptyList()
     }
 }
+
+// Función para actualizar el historial de rivales de un jugador
+suspend fun actualizarHistorial(
+    edicionId: Int,
+    jugadorId: String,
+    nuevoRivalId: String,
+    historialActual: List<String>
+) {
+    try {
+        // Mantenemos solo los últimos 3 rivales para no saturar la penalización
+        val nuevoHistorial = (listOf(nuevoRivalId) + historialActual).take(3)
+
+        client.postgrest["participa"].update(
+            {
+                set("historial_rivales", nuevoHistorial)
+            }
+        ) {
+            filter {
+                eq("id_edicion", edicionId)
+                eq("id_jugador", jugadorId)
+            }
+        }
+
+        //("SUPABASE", "Historial de rivales actualizado para $jugadorId")
+
+    } catch (e: Exception) {
+        println("SUPABASE_ERROR" + "Error al actualizar historial: ${e.message}")
+    }
+}

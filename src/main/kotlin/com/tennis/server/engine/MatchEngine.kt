@@ -5,6 +5,7 @@ import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
 import org.jgrapht.graph.DefaultWeightedEdge
 import org.jgrapht.graph.SimpleWeightedGraph
+import org.jgrapht.alg.matching.blossom.v5.KolmogorovWeightedPerfectMatching
 
 object MatchEngine {
     /**
@@ -38,16 +39,61 @@ object MatchEngine {
         // Añadimos los vértices al grafo
         listaNodos.forEach { participante -> grafo.addVertex(participante.id) }
 
+        // Calculamos el valor de la penalización que se sumará al peso de la arista entre dos jugadores que hayan jugado recientemente
+        // Dicho valor será la diferencia entre el jugador con mayor puntuación y el que menos
+        val puntosMax = listaNodos.maxOf { it.puntos }
+        val puntosMin = listaNodos.minOf { it.puntos }
+        val penalizacion = (puntosMax - puntosMin).toDouble() + 1.0
+
         // A continuación añadimos las conexiones entre los jugadores
+        for (i in listaNodos.indices) {
+            for (j in i + 1 until listaNodos.size) {
+                val participante1 = listaNodos[i]
+                val participante2 = listaNodos[j]
 
+                // Añadimos la arista
+                val edge = grafo.addEdge(participante1.id, participante2.id)
 
+                var peso =
+                    // Caso en el que uno de los nodos sea el que representa la jornada de descanso, su peso será igual para todos los nodos
+                    if (participante1.id == "SISTEMA_BYE" || participante2.id == "SISTEMA_BYE") {
+                        // Añadimos para todas las aristas que conectan con el jugador de "descanso" la mayor diferencia de puntos en el ranking
+                        // de esta manera, el último jugador que se ha quedado sin asignar será asignado con la jornada de descanso.
+                        penalizacion
+                    } else { // En otro caso, el peso de la arista será la diferencia de puntos (nivel) entre ambos jugadores
+                        kotlin.math.abs(participante1.puntos - participante2.puntos).toDouble()
+                    }
+                // Añadimos una penalización si ambos jugadores se han enfrentado recientemente
+                // Nótese que esto incluye al jugador que representa la jornada de descanso
+                peso += if (participante2.id in participante1.historialRivales) penalizacion else 0.0
+                grafo.setEdgeWeight(edge, peso)
+            }
+        }
 
+        // Una vez tenemos el grafo definido junto a su matriz de costes, procedemos con la ejecución del algoritmo
+        // utilizando la función de Blossom V que viene dada en la librería de jgrapht
+        val algoritmo = KolmogorovWeightedPerfectMatching(grafo)
+        val matching = algoritmo.matching
 
-        // 2. Calcular pesos: |puntos_A - puntos_B|
-        // 3. Ejecutar algoritmo
-        // 4. Retornar lista de objetos Partido
+        // Una vez tenemos el matching, procedemos a generar los partidos:
+        return matching.edges.mapNotNull {edge ->
+            val v1 = grafo.getEdgeSource(edge)
+            val v2 = grafo.getEdgeTarget(edge)
+            // Si alguno de los dos es el sistema de descanso, no creamos un objeto Partido
+            if (v1 == "SISTEMA_BYE" || v2 == "SISTEMA_BYE") {
+                null
+            } else {
+                Partido(
+                    idJugador1 = v1,
+                    idJugador2 = v2,
+                    estado = "pendiente",
+                    idGanador = null,
+                    puntosIntercambiados = 0.0,
+                    idJornada = jornada.id,
+                )
+            }
+        }
 
-        return emptyList() // Implementaremos esto a continuación
     }
 }
 
