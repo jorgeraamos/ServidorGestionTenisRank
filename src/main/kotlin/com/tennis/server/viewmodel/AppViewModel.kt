@@ -1,13 +1,16 @@
 package com.tennis.server.viewmodel
 
 import com.tennis.server.data.DataRepository
+import com.tennis.server.data.deleteJornada
 import com.tennis.server.data.getAllParticipantes
 import com.tennis.server.data.getAllRankings
+import com.tennis.server.data.getUltimaJornada
+import com.tennis.server.data.insertJornada
 import com.tennis.server.data.insertPartidos
+import com.tennis.server.data.updateJornada
 import com.tennis.server.engine.MatchEngine
 import com.tennis.server.engine.MatchEngine.generarEmparejamientos
 import com.tennis.server.model.*
-import com.tennis.server.scheduler.JornadaScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,18 +40,6 @@ class AppViewModel {
     private val _logs = MutableStateFlow<List<String>>(emptyList())
     val logs: StateFlow<List<String>> = _logs.asStateFlow()
 
-    // schedulerRunning indica si el motor de autogeneración está encendido.
-    private val _schedulerRunning = MutableStateFlow(false)
-    val schedulerRunning: StateFlow<Boolean> = _schedulerRunning.asStateFlow()
-
-    // --- TEMPORIZADOR DE JORNADAS AUTOMÁTICAS ---
-    private val scheduler = JornadaScheduler(CoroutineScope(Dispatchers.Default)) {
-        // [Callback]: Esto es lo que el scheduler ejecuta cuando toca generar la siguiente ronda.
-        scope.launch {
-            log("Scheduler: Generando jornada automática...")
-            generarJornada() // Llama a la lógica principal
-        }
-    }
 
     /**
      * Bloque INIT: Se ejecuta en cuanto la aplicación arranca.
@@ -63,11 +54,6 @@ class AppViewModel {
 
             // Cargamos los nombres de los rankings para el selector
             cargarRankings()
-            
-            // Si estaba activada la generación automática, encendemos el temporizador.
-            if(data.config.autoGenerarJornadas) {
-                iniciarScheduler()
-            }
         }
     }
 
@@ -86,12 +72,6 @@ class AppViewModel {
         saveData() // Invoca la persistencia en disco
         log("Configuración actualizada: ${config.selectedRanking}")
 
-        // Reevalúa el hilo automático según vengan los nuevos ajustes
-        if (config.autoGenerarJornadas) {
-            iniciarScheduler()
-        } else {
-            detenerScheduler()
-        }
     }
 
     private val _rankingsDisponibles = MutableStateFlow<List<Ranking>>(emptyList())
@@ -112,23 +92,135 @@ class AppViewModel {
     }
 
 
-    // Función para generar los partidos y guardarlos en Supabase:
-    fun generarYGuardarNuevaJornada(
-        participantes: List<Participante>,
-        jornada: Jornada,
-        edicionId: Int
-    ) {
+    fun generarYGuardarNuevaJornada() {
+        val currentData = _appData.value
+        val config = currentData.config
+
+        // Validamos primero que la edicion esté seleccionada
+        val edicion = config.selectedEdicion ?: run {
+            log("ERROR: No hay edición seleccionada")
+            return
+        }
+
+        // Validamos también que la fecha esté seleccionada
+        // (no hace falta por otro lado validar el intervalo de la jornada ya que nunca será null)
+        if (config.fechaInicio.isBlank()) {
+            log("ERROR: La fecha de inicio no puede estar vacía")
+            return
+        }
+
         scope.launch {
             try {
-                // Calculamos los emparejamientos
-                val partidos = generarEmparejamientos(participantes, jornada)
+                log("Iniciando proceso para la Edición: ${edicion.nombre}")
 
-                // Insertamos los partidos en la base de datos
-                insertPartidos(partidos, edicionId)
+                // Obtenenemos los participantes de la base de datos para la edicion seleccionada
+                val participantes = getAllParticipantes(edicion.id)
+
+                // SE PODRÍA PONER UNA RESTRICCIÓN DEL NÚMERO DE PARTICIPANTES!!!
+                // Comprobamos que haya participantes en dicha edición
+                if (participantes.isEmpty()) {
+                    log("AVISO: No hay participantes inscritos en esta edición.")
+                    return@launch
+                }
+
+                // Creamos el objeto Jornada usando los datos de Config
+                val numeroJornada = config.ultimaJornada!!.numero + 1 // No puede ser null porque supabase no lo permite
+                val fechaInicioParsed = LocalDate.parse(config.fechaInicio)
+                val fechaFinParsed = fechaInicioParsed.plusDays(config.intervaloJornadaDias.toLong())
+
+                val nuevaJornada = Jornada(
+                    id = 0,
+                    idEdicion = edicion.id,
+                    numero = numeroJornada,
+                    fechaInicio = fechaInicioParsed.toString(),
+                    fechaFin = fechaFinParsed.toString(),
+                    estado = "pendiente"
+                )
+
+                // Insertamos la nueva jornada en Supabase
+                insertJornada(nuevaJornada) { mensaje -> log(mensaje)}
+
+                // Ejecutamos el algoritmo de emparejamiento
+                log("Calculando emparejamientos óptimos...")
+                val partidos = generarEmparejamientos(participantes, nuevaJornada)
+
+                // Insertamos los partidos en Supabase
+
+                insertPartidos(partidos, edicion.id) {mensaje -> log(mensaje)}
+
+                // Actualizamos el estado local para que la UI se refresque sola
+                val nuevaConfig = config.copy(ultimaJornada = nuevaJornada)
+
+                _appData.value = currentData.copy(
+                    config = nuevaConfig,
+                    jornadas = currentData.jornadas + nuevaJornada,
+                    partidos = currentData.partidos + partidos
+                )
+
+                log("ÉXITO: Jornada $numeroJornada generada con ${partidos.size} partidos.")
+
 
             } catch (e: Exception) {
-                // Manejo de errores (mostrar un Toast o un SnackBar)
-                println("Error al procesar la jornada: ${e.message}")
+                log("Error crítico al generar la nueva Jornada: ${e.message}")
+                println("Stacktrace: ${e.printStackTrace()}")
+            }
+        }
+    }
+
+    //Función para cancelar la última jornada
+    fun cancelarJornada(jornada: Jornada) {
+        scope.launch {
+            try {
+                // Llamamos a la función deleteJornada de supabase
+                deleteJornada(jornada.id) { mensaje -> log(mensaje) }
+
+                // Actualizamos el estado local (AppData) para tener la UI actualizada
+                val currentData = _appData.value
+
+                // Filtramos la lista de jornadas para quitar la que acabamos de borrar
+                val jornadasActualizadas = currentData.jornadas.filter { it.id != jornada.id }
+
+                // Buscamos cuál es ahora la "nueva" última jornada de esa edición
+                val nuevaUltima = jornadasActualizadas
+                    .filter { it.idEdicion == jornada.idEdicion }
+                    .maxByOrNull { it.numero }
+
+                // Emitimos el nuevo estado
+                _appData.value = currentData.copy(
+                    jornadas = jornadasActualizadas,
+                    config = currentData.config.copy(ultimaJornada = nuevaUltima)
+                )
+
+                log("Jornada ${jornada.numero} cancelada con éxito.")
+
+            } catch (e: Exception) {
+                log("Error al procesar la cancelación de la jornada: ${e.message}")
+            }
+        }
+    }
+
+    // Función para finalizar la jornada
+    fun finalizarJornada(jornada : Jornada){
+        scope.launch {
+            try {
+                // Llamamos a la función updateJornada de supabase
+                updateJornada(jornada.id) { mensaje -> log(mensaje) }
+
+                // Actualizamos el estado local (AppData) para tener la UI actualizada
+                val currentData = _appData.value
+
+                // Buscamos cuál es ahora la "nueva" última jornada de esa edición
+                val nuevaUltima = getUltimaJornada(currentData.config.selectedEdicion!!.id)
+
+                // Emitimos el nuevo estado
+                _appData.value = currentData.copy(
+                    config = currentData.config.copy(ultimaJornada = nuevaUltima)
+                )
+
+                log("Jornada ${jornada.numero} finalizada con éxito.")
+
+            } catch (e: Exception) {
+                log("Error al finalizar la jornada: ${e.message}")
             }
         }
     }
@@ -150,78 +242,8 @@ class AppViewModel {
         log("Jugador eliminado: $name")
     }
 
-    // --- ACCIONES DE JORNADAS Y PARTIDOS ---
-    /**
-     * Fuerza o genera automáticamente la próxima lista de partidos según la fecha.
-     */
-    fun generarJornada() {
-        val current = _appData.value
-        val edicionActual = current.config.selectedEdicion
-
-        if (edicionActual == null) {
-            log("ERROR: No hay una edición seleccionada para generar partidos.")
-            return
-        }
-
-        scope.launch {
-            try {
-                log("Obteniendo participantes y puntos para la edición: ${edicionActual.nombre}...")
-
-                //  Llamamos a la función que obtiene a los participantes desde supabase
-                val participantes = getAllParticipantes(edicionActual.id)
-
-                if (participantes.isEmpty()) {
-                    log("ERROR: No hay participantes inscritos en esta edición.")
-                    return@launch
-                }
-
-                // Definimos la nueva jornada
-                val number = current.jornadas.size + 1
-                val newJornada = Jornada(
-                    id = number,
-                    nombre = "Jornada $number",
-                    fechaInicio = LocalDate.now().toString(),
-                    fechaFin = LocalDate.now().plusDays(current.config.intervaloJornadaDias.toLong()).toString(),
-                    estado = "en_curso"
-                )
-
-                log("Ejecutando algoritmo de emparejamiento con ${participantes.size} jugadores...")
-
-                // Llamamos a la función de generación de los emparejamientos
-                val partidos = generarEmparejamientos(participantes, newJornada)
-
-                // 4. Actualizamos el estado global
-                _appData.value = current.copy(
-                    jornadas = current.jornadas + newJornada,
-                    partidos = current.partidos + partidos
-                )
-
-                saveData()
-                log("Jornada $number creada con éxito mediante optimización de Elo.")
-
-            } catch (e: Exception) {
-                log("Error en el proceso de emparejamiento: ${e.message}")
-            }
-        }
-    }
-
     fun clearLogs() {
         _logs.value = emptyList()
-    }
-
-    // --- CONTROL INTERNO DEL SCHEDULER ---
-    private fun iniciarScheduler() {
-        val config = _appData.value.config
-        val lastRound = _appData.value.jornadas.lastOrNull()?.fechaInicio
-        scheduler.start(config, lastRound)
-        _schedulerRunning.value = scheduler.isRunning
-        if(scheduler.isRunning) log("Scheduler automático INICIADO")
-    }
-
-    private fun detenerScheduler() {
-        scheduler.stop()
-        _schedulerRunning.value = scheduler.isRunning
-        log("Scheduler automático DETENIDO")
     }
 
     // Función auxiliar para enviar datos a DataRepository en segundo plano

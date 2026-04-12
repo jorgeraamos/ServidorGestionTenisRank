@@ -13,13 +13,17 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.ui.graphics.Color
 import com.tennis.server.data.getAllEdiciones
 import com.tennis.server.data.getAllRankings
+import com.tennis.server.data.getUltimaJornada
 import java.time.Instant
 import java.time.ZoneId
 import com.tennis.server.model.AppConfig
 import com.tennis.server.model.Edicion
 import com.tennis.server.viewmodel.AppViewModel
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /**
  * Panel de Configuración de la aplicación.
@@ -47,12 +51,16 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     var selectedEdicion by remember {mutableStateOf(config.selectedEdicion)}
     var intervalo by remember { mutableStateOf(config.intervaloJornadaDias.toFloat()) }
     var fechaInicio by remember { mutableStateOf(config.fechaInicio) }
-    var autoGenerar by remember { mutableStateOf(config.autoGenerarJornadas) }
+    var ultimaJornada by remember {mutableStateOf(config.ultimaJornada)}
+
     
     // Estado para controlar cuándo mostrar y ocultar el selector de calendario
     var showDatePicker by remember { mutableStateOf(false) }
     // Estado interno del componente DatePicker (para leer qué día ha seleccionado el usuario)
     val datePickerState = rememberDatePickerState()
+
+    val scope = rememberCoroutineScope() // Necesario para lanzar el Snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Cada vez que se seleccione un ranking, actualizaremos las ediciones que se puedan elegir en relación a dicho ranking
     LaunchedEffect(selectedRanking) {
@@ -66,10 +74,21 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
             }
         }
     }
+    // Cada vez que se seleccion la edición del ranking, actualizaremos la variable última jornada
+    LaunchedEffect(selectedEdicion){
+        if(selectedEdicion != null) {
+            ultimaJornada = getUltimaJornada(selectedEdicion!!.id)
+        }
+        else{
+            ultimaJornada = null
+        }
+    }
+
 
     // Layout principal en columna
     Column(modifier = modifier.padding(16.dp).fillMaxSize()) {
-        Text("Configuración del Servidor", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+        Text("Gestión de Jornadas", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+        Text("Selecciona la competición para generar nuevos emparejamientos.", style = MaterialTheme.typography.body2, color = Color.Gray)
         Spacer(modifier = Modifier.height(24.dp))
 
         // Tarjeta envolvente para los campos
@@ -104,7 +123,7 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Campo de Texto para la Fecha de Inicio
                 OutlinedTextField(
                     value = fechaInicio,
@@ -118,11 +137,13 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                         }
                     }
                 )
-                
+
                 // --- DIÁLOGO DEL CALENDARIO (Solo se muesta si showDatePicker es true) ---
                 if (showDatePicker) {
                     DatePickerDialog(
-                        onDismissRequest = { showDatePicker = false }, // Si clicas fuera, se oculta
+                        onDismissRequest = {
+                            showDatePicker = false
+                        }, // Si se clica fuera, se oculta
                         confirmButton = {
                             Button(onClick = {
                                 // Convertimos los milisegundos seleccionados a una fecha legible YYYY-MM-DD
@@ -130,7 +151,8 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                                     val localDate = Instant.ofEpochMilli(millis)
                                         .atZone(ZoneId.of("UTC"))
                                         .toLocalDate()
-                                    fechaInicio = localDate.toString() // Guardamos la fecha convertida
+                                    fechaInicio =
+                                        localDate.toString() // Guardamos la fecha convertida
                                 }
                                 showDatePicker = false // Cerramos el calendario
                             }) {
@@ -147,9 +169,9 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                         DatePicker(state = datePickerState)
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Selector deslizante (Slider) para los días de intervalo
                 Text("Intervalo entre jornadas: ${intervalo.toInt()} días")
                 Slider(
@@ -159,36 +181,83 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                     steps = 29               // Cantidad de paradas del slider
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Interruptor para Generación Automática
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Switch(checked = autoGenerar, onCheckedChange = { autoGenerar = it })
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Generar jornadas automáticamente")
-                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón Final de Guardado
-                Button(
-                    onClick = {
-                        // Le mandamos al ViewModel el nuevo objeto de configuración
-                        // para que se sobreescriba y se guarde de forma permanente.
-                        viewModel.updateConfig(
-                            AppConfig(
-                                selectedRanking = selectedRanking,
-                                intervaloJornadaDias = intervalo.toInt(),
-                                fechaInicio = fechaInicio,
-                                autoGenerarJornadas = autoGenerar
-                            )
-                        )
-                    },
-                    modifier = Modifier.align(Alignment.End) // Alineado a la derecha
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End) // Añadimos espacio entre ambos botones
                 ) {
-                    Text("Guardar Configuración")
+                    // Botón para cancelar la última jornada si está no se ha disputado aún
+                    Button(
+                        onClick = {
+                            if(ultimaJornada != null) {
+                                val fechaActual = LocalDate.now()
+                                val fechaInicioJornada =
+                                    LocalDate.parse(ultimaJornada!!.fechaInicio)
+                                if (fechaActual.isBefore(fechaInicioJornada) && ultimaJornada!!.estado == "programada") {
+                                    viewModel.cancelarJornada(ultimaJornada!!)
+                                } else {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            message = "Error: No se ha podido cancelar la jornada: comprueba la fecha y su estado",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                }
+                            }else{
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Error: No se ha podido cancelar la jornada",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+
+
+                        }, // Ponemos el botón de color rojo
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.error,
+                            contentColor = Color.White
+                        )
+                    ){
+                        Text("Cancelar Jornada")
+                    }
+
+                    // Botón Final de Guardado
+                    Button(
+                        onClick = {
+                            if (ultimaJornada == null || ultimaJornada?.estado == "finalizada") {
+                                // Le mandamos al ViewModel el nuevo objeto de configuración
+                                // para que se sobreescriba y se guarde de forma permanente.
+                                viewModel.updateConfig(
+                                    AppConfig(
+                                        selectedRanking = selectedRanking,
+                                        selectedEdicion = selectedEdicion,
+                                        intervaloJornadaDias = intervalo.toInt(),
+                                        fechaInicio = fechaInicio,
+                                        ultimaJornada = ultimaJornada
+                                    )
+                                )
+                                viewModel.generarYGuardarNuevaJornada()
+                            } else {
+                                // Caso ERROR: Mostramos el aviso
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Error: La Jornada ${ultimaJornada?.numero} aún está en juego",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        Text("Generar Jornada")
+                    }
                 }
             }
         }
+        Spacer(modifier = Modifier.weight(1f))
+        SnackbarHost(hostState = snackbarHostState)  // Barra donde saldrá el popUp
     }
 }

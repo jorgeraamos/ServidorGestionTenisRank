@@ -1,33 +1,25 @@
 {
     "config": {
         "intervaloJornadaDias": 7,
-        "fechaInicio": "",
+        "fechaInicio": "2026-04-13",
         "selectedRanking": {
             "id": 1,
             "nombre": "Ranking UPM",
             "ciudad": "Madrid",
             "municipio": "Montepríncipe\n"
         },
-        "selectedEdicion": null,
-        "autoGenerarJornadas": false
+        "selectedEdicion": {
+            "id": 1,
+            "nombre": "Ranking 2026",
+            "fecha_inicio": null,
+            "fecha_fin": null,
+            "id_ranking": 1,
+            "estado": "activo"
+        },
+        "ultimaJornada": null
     },
     "jugadores": [],
-    "jornadas": [
-        {
-            "id": 1,
-            "nombre": "Jornada 1",
-            "fechaInicio": "2026-03-26",
-            "fechaFin": "2026-04-02",
-            "estado": "en_curso"
-        },
-        {
-            "id": 2,
-            "nombre": "Jornada 2",
-            "fechaInicio": "2026-03-26",
-            "fechaFin": "2026-04-02",
-            "estado": "en_curso"
-        }
-    ],
+    "jornadas": [],
     "partidos": [],
     "sets": []
 }

@@ -1,12 +1,14 @@
 package com.tennis.server.model
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class Jornada(
-    val id: Int = 0,                     // int4 en Supabase
-    val nombre: String = "",
-    val fechaInicio: String = "",         // date ISO
-    val fechaFin: String = "",            // date ISO
-    val estado: String = "pendiente"      // "pendiente", "en_curso", "finalizada"
+    @SerialName("id") val id: Int = 0,                     // int4 en Supabase
+    @SerialName("id_edicion") val idEdicion: Int,
+    @SerialName("numero") val numero: Int,
+    @SerialName("fecha_inicio") val fechaInicio: String = "",         // date ISO
+    @SerialName("fecha_fin") val fechaFin: String = "",            // date ISO
+    @SerialName("estado") val estado: String = "pendiente"      // "pendiente", "en_curso", "finalizada"
 )

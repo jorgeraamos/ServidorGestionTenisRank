@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.tennis.server.model.Jornada
 import com.tennis.server.model.Partido
 import com.tennis.server.viewmodel.AppViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
@@ -25,6 +26,17 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     val jornadas = appData.jornadas
     val partidos = appData.partidos
     val jugadores = appData.jugadores
+    val config = appData.config
+
+    val scope = rememberCoroutineScope() // Necesario para lanzar el Snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Buscamos la jornada que se puede finalizar:
+    // Es la última jornada de la edición actual que NO esté ya finalizada.
+    val jornadaAFinalizar = jornadas
+        .filter { it.idEdicion == config.selectedEdicion?.id }
+        .maxByOrNull { it.numero }
+        .takeIf { it?.estado != "finalizada" }
 
     Column(modifier = modifier.padding(16.dp).fillMaxSize()) {
         Row(
@@ -33,15 +45,29 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Jornadas", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
-            Button(onClick = { viewModel.generarJornada() }) {
+            Button(
+                onClick = {
+                    if(jornadaAFinalizar != null) {
+                        jornadaAFinalizar?.let { viewModel.finalizarJornada(it) }
+                    }else{
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Error: No hay ninguna jornada para finalizar",
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
+            }
+            ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = "Generar")
                 Spacer(Modifier.width(4.dp))
-                Text("Generar Emparejamientos (Demo)")
+                    Text("Finalizar Jornada ${jornadaAFinalizar?.numero ?: ""}")
             }
         }
         
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Se mostrarán todas las jornadas que se han creado de dicha edición y sus partidos:
         if (jornadas.isEmpty()) {
             Text("No hay jornadas creadas.", modifier = Modifier.padding(16.dp))
         } else {
@@ -52,6 +78,10 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
+        }
+        // Zona en la que saldrá el mensaje en caso de error:
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+            SnackbarHost(hostState = snackbarHostState)
         }
     }
 }
@@ -71,7 +101,7 @@ fun JornadaExpandableCard(jornada: Jornada, partidos: List<Partido>, jugadores: 
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text(jornada.nombre, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.subtitle1)
+                    Text("Jornada ${jornada.numero}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.subtitle1)
                     Text("${jornada.fechaInicio} - ${jornada.fechaFin} | Estado: ${jornada.estado}", style = MaterialTheme.typography.body2, color = Color.Gray)
                 }
                 Icon(
@@ -84,11 +114,19 @@ fun JornadaExpandableCard(jornada: Jornada, partidos: List<Partido>, jugadores: 
                 Divider()
                 Column(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
                     if (partidos.isEmpty()) {
-                        Text("No hay partidos en esta jornada (Modo Demo: Motor devolvió lista vacía)", color = MaterialTheme.colors.secondary)
+                        Text("No hay partidos en esta jornada ", color = MaterialTheme.colors.secondary)
                     } else {
                         partidos.forEach { partido ->
-                            val p1 = jugadores.find { it.id == partido.idJugador1 }?.nombreCompleto ?: "Jugador Extraño"
-                            val p2 = jugadores.find { it.id == partido.idJugador2 }?.nombreCompleto ?: "Jugador Extraño"
+
+                            val p1 = if (partido.idJugador1 == "SISTEMA_BYE")
+                                partido.idJugador1
+                            else
+                                jugadores.find { it.id == partido.idJugador1 }?.nombreCompleto
+                                    ?: "Jugador Extraño"
+                            val p2 = if (partido.idJugador2 == "SISTEMA_BYE")
+                                partido.idJugador2
+                                else
+                                jugadores.find { it.id == partido.idJugador2 }?.nombreCompleto ?: "Jugador Extraño"
                             
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),

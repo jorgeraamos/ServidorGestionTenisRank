@@ -39,9 +39,7 @@ enum class Screen {
 fun MainScreen(viewModel: AppViewModel) {
     // Estado que guarda la pantalla seleccionada actualmente en el menú
     var currentScreen by remember { mutableStateOf(Screen.Config) }
-    
-    // Observamos el estado del scheduler (si está activo generando jornadas)
-    val isSchedulerRunning by viewModel.schedulerRunning.collectAsState()
+
     
     // Observamos los datos generales de la aplicación (configuración, etc.)
     val config by viewModel.appData.collectAsState()
@@ -110,29 +108,6 @@ fun MainScreen(viewModel: AppViewModel) {
                 isSelected = currentScreen == Screen.Logs,
                 onClick = { currentScreen = Screen.Logs }
             )
-
-            // Spacer que empuja el siguiente bloque hacia la parte inferior del menú
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Indicador de estado para mostrar si el generador automático está en ejecución
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Punto de color (Verde/Primario si está activo, Rojo si no lo está)
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .background(if (isSchedulerRunning) MaterialTheme.colors.primary else Color.Red, shape = androidx.compose.foundation.shape.CircleShape)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                // Mensaje informativo del estado
-                Text(
-                    text = if (isSchedulerRunning) "Auto-Generación Activa" else "Auto-Generación Inactiva",
-                    style = MaterialTheme.typography.caption,
-                    color = Color.LightGray
-                )
-            }
         }
         // FIN DEL MENÚ LATERAL
 

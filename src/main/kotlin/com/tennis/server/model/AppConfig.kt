@@ -8,7 +8,7 @@ data class AppConfig(
     val fechaInicio: String = "",               // fecha de inicio del ranking
     val selectedRanking: Ranking? = null,
     val selectedEdicion: Edicion? = null,
-    val autoGenerarJornadas: Boolean = false    // generar jornadas automáticamente
+    val ultimaJornada: Jornada? = null
 )
 
 @Serializable
