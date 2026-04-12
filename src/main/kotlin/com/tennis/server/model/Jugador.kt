@@ -1,12 +1,13 @@
 package com.tennis.server.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @Serializable
 data class Jugador(
-    val id: String = UUID.randomUUID().toString(),
-    val nombreCompleto: String,
+    @SerialName("id") val id: String = UUID.randomUUID().toString(),
+    @SerialName("nombre_completo") val nombreCompleto: String,
     val email: String = "",
     val puntosActuales: Int = 0,
     val posicionRanking: Int = 0,

@@ -1,6 +1,7 @@
 package com.tennis.server.viewmodel
 
 import com.tennis.server.data.DataRepository
+import com.tennis.server.data.actualizarHistorialRivales
 import com.tennis.server.data.deleteJornada
 import com.tennis.server.data.getAllJornadas
 import com.tennis.server.data.getAllParticipantes
@@ -11,6 +12,7 @@ import com.tennis.server.data.insertPartidos
 import com.tennis.server.data.updateJornada
 import com.tennis.server.engine.MatchEngine
 import com.tennis.server.engine.MatchEngine.generarEmparejamientos
+import com.tennis.server.engine.RankingEngine.actualizarPuntuaciones
 import com.tennis.server.model.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -249,18 +251,33 @@ class AppViewModel {
     fun finalizarJornada(jornada : Jornada){
         scope.launch {
             try {
+                val currentData = _appData.value
+
+                //Obtenemos los partidos que pertenecen a la jornada
+                val partidosDeLaJornada = currentData.partidos.filter { it.idJornada == jornada.id }
+
+                val edicion = currentData.config.selectedEdicion ?: return@launch log("Error: No hay edición seleccionada")
+
+                // Obtenemos los participantes
+                val participantes = currentData.participantes
+                // Actualizamos las puntuaciones de la jornada:
+                actualizarPuntuaciones(edicion!!.id, partidosDeLaJornada, participantes)
+
+                log("Se han actualizado las puntuaciones correctamente")
+
                 // Llamamos a la función updateJornada de supabase
                 updateJornada(jornada.id) { mensaje -> log(mensaje) }
-
-                // Actualizamos el estado local (AppData) para tener la UI actualizada
-                val currentData = _appData.value
 
                 // Buscamos cuál es ahora la "nueva" última jornada de esa edición
                 val nuevaUltima = getUltimaJornada(currentData.config.selectedEdicion!!.id)
 
+                // Cogemos de nuevo los participantes al haber actualizado sus puntuaciones
+                val participantesActualizados = getAllParticipantes(edicion.id)
+
                 // Emitimos el nuevo estado
                 _appData.value = currentData.copy(
-                    config = currentData.config.copy(ultimaJornada = nuevaUltima)
+                    config = currentData.config.copy(ultimaJornada = nuevaUltima),
+                    participantes = participantesActualizados
                 )
 
                 log("Jornada ${jornada.numero} finalizada con éxito.")

@@ -5,6 +5,7 @@ import com.tennis.server.model.Jornada
 import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
 import com.tennis.server.model.Ranking
+import com.tennis.server.model.Set
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
@@ -102,6 +103,7 @@ suspend fun getAllParticipantes(edicionId: Int): List<Participante> {
                 filter {
                     eq("id_edicion", edicionId)
                 }
+                order("puntos", order = Order.DESCENDING)
             }
         response.decodeList<Participante>()
     } catch (e: Exception) {
@@ -132,6 +134,23 @@ suspend fun getUltimaJornada(idEdicion: Int): Jornada? {
     }
 }
 
+suspend fun getAllSets(idsPartidos: List<String>): List<Set> {
+    if (idsPartidos.isEmpty()) return emptyList()
+    return try {
+        val response = client.postgrest["set"]
+            .select {
+                filter {
+                    // Traemos todos los sets cuyo id_partido esté en nuestra lista
+                    isIn("id_partido", idsPartidos)
+                }
+            }
+        response.decodeList<Set>()
+    } catch (e: Exception) {
+        println("Error cargando los sets: ${e.message}")
+        emptyList()
+    }
+}
+
 
 
 suspend fun insertJornada(nuevaJornada: Jornada, onLog: (String) -> Unit) {
@@ -157,22 +176,22 @@ suspend fun insertPartidos(partidosGenerados: List<Partido>, edicionId: Int, onL
         onLog("Error al insertar los partidos en supabase:  ${e.message} " )
     }
 
-    try {
-        // Actualizamos el historial de los rivales para cada jugador
-        partidosGenerados.forEach { partido ->
-            // Si el jugador1 es real, le añadimos al jugador2 (sea real o BYE)
-            if (partido.idJugador1 != "SISTEMA_BYE") {
-                actualizarHistorialRivales(edicionId, partido.idJugador1, partido.idJugador2)
-            }
-
-            // Lo mismo para el jugador2
-            if (partido.idJugador2 != "SISTEMA_BYE") {
-                actualizarHistorialRivales(edicionId, partido.idJugador2, partido.idJugador1)
-            }
-        }
-    }catch (e : Exception){
-        onLog("Error al actualizar el historial de los rivales de cada jugador:  ${e.message} " )
-    }
+//    try {
+//        // Actualizamos el historial de los rivales para cada jugador
+//        partidosGenerados.forEach { partido ->
+//            // Si el jugador1 es real, le añadimos al jugador2 (sea real o BYE)
+//            if (partido.idJugador1 != "SISTEMA_BYE") {
+//                actualizarHistorialRivales(edicionId, partido.idJugador1, partido.idJugador2)
+//            }
+//
+//            // Lo mismo para el jugador2
+//            if (partido.idJugador2 != "SISTEMA_BYE") {
+//                actualizarHistorialRivales(edicionId, partido.idJugador2, partido.idJugador1)
+//            }
+//        }
+//    }catch (e : Exception){
+//        onLog("Error al actualizar el historial de los rivales de cada jugador:  ${e.message} " )
+//    }
 }
 
 // Función para actualizar el historial de rivales de un jugador
@@ -231,6 +250,63 @@ suspend fun updateJornada(idJornada: Int, onLog: (String) -> Unit){
         onLog("Error al actualizar el estado de la jornada: ${e.message}")
     }
 }
+
+// Función que se utilizará para actualizar las puntuaciones de cada jugador y el ganador del partido
+suspend fun updatePuntuaciones(
+    idEdicion: Int,
+    idPartido: String,
+    idJugador1: String,
+    idJugador2: String,
+    idGanador: String,
+    puntosJugador1: Int,
+    puntosJugador2: Int
+    ){
+    try {
+        client.postgrest["partido"].update(
+            {
+                set("id_ganador", idGanador)
+                set("estado", "jugado")
+            }
+        ) {
+            filter {
+                eq("id", idPartido)
+            }
+        }
+    }catch(e : Exception ){
+        //onLog("Error al actualizar el estado de la jornada: ${e.message}")
+    }
+
+    try {
+        client.postgrest["participa"].update(
+            {
+                set("puntos", puntosJugador1)
+            }
+        ) {
+            filter {
+                eq("id_edicion", idEdicion)
+                eq("id_jugador", idJugador1)
+            }
+        }
+    }catch(e : Exception ){
+        //onLog("Error al actualizar el estado de la jornada: ${e.message}")
+    }
+
+    try {
+        client.postgrest["participa"].update(
+            {
+                set("puntos", puntosJugador2)
+            }
+        ) {
+            filter {
+                eq("id_jugador", idJugador2)
+            }
+        }
+    }catch(e : Exception ){
+        //onLog("Error al actualizar el estado de la jornada: ${e.message}")
+    }
+
+}
+
 
 // Función que elimina una jornada en el caso en el que el administrador se haya equivocado y la jornada no se haya
 // jugado aún

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import java.util.UUID
 
 @Serializable
-data class SetTenis(
+data class Set(
     val id: String = UUID.randomUUID().toString(),
     val idPartido: String,                // uuid FK -> partidos
     val numeroSet: Int,                   // 1, 2, 3...
