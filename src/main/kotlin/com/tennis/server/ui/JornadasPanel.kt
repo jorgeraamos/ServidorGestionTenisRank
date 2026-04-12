@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tennis.server.model.Jornada
+import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
 import com.tennis.server.viewmodel.AppViewModel
 import kotlinx.coroutines.launch
@@ -25,7 +26,7 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     val appData by viewModel.appData.collectAsState()
     val jornadas = appData.jornadas
     val partidos = appData.partidos
-    val jugadores = appData.jugadores
+    val participantes = appData.participantes
     val config = appData.config
 
     val scope = rememberCoroutineScope() // Necesario para lanzar el Snackbar
@@ -74,7 +75,7 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(jornadas.reversed()) { jornada ->
                     val partidosJornada = partidos.filter { it.idJornada == jornada.id }
-                    JornadaExpandableCard(jornada, partidosJornada, jugadores)
+                    JornadaExpandableCard(jornada, partidosJornada, participantes)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -87,7 +88,7 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun JornadaExpandableCard(jornada: Jornada, partidos: List<Partido>, jugadores: List<com.tennis.server.model.Jugador>) {
+fun JornadaExpandableCard(jornada: Jornada, partidos: List<Partido>, participantes: List<Participante>) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(elevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
@@ -118,22 +119,21 @@ fun JornadaExpandableCard(jornada: Jornada, partidos: List<Partido>, jugadores: 
                     } else {
                         partidos.forEach { partido ->
 
-                            val p1 = if (partido.idJugador1 == "SISTEMA_BYE")
-                                partido.idJugador1
-                            else
-                                jugadores.find { it.id == partido.idJugador1 }?.nombreCompleto
-                                    ?: "Jugador Extraño"
-                            val p2 = if (partido.idJugador2 == "SISTEMA_BYE")
-                                partido.idJugador2
-                                else
-                                jugadores.find { it.id == partido.idJugador2 }?.nombreCompleto ?: "Jugador Extraño"
+                            val p1 = participantes.find { it.id == partido.idJugador1 }?.jugador?.nombreCompleto ?: "DESCANSO"
+                            val p2 = participantes.find { it.id == partido.idJugador2 }?.jugador?.nombreCompleto ?: "DESCANSO"
                             
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("$p1 vs $p2")
-                                Text("Estado: ${partido.estado}")
+                                if(p1 == "DESCANSO"){
+                                    Text("Descanso para el jugador $p2")
+                                }else if(p2 == "DESCANSO"){
+                                    Text("Descanso para el jugador $p1")
+                                }else {
+                                    Text("$p1 vs $p2")
+                                    Text("Estado: ${partido.estado}")
+                                }
                             }
                             Divider(modifier = Modifier.padding(vertical = 4.dp))
                         }

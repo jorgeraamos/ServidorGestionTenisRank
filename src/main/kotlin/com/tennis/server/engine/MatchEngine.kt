@@ -3,6 +3,7 @@ package com.tennis.server.engine
 import com.tennis.server.data.actualizarHistorialRivales
 import com.tennis.server.model.Edicion
 import com.tennis.server.model.Jornada
+import com.tennis.server.model.Jugador
 import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
 import org.jgrapht.graph.DefaultWeightedEdge
@@ -32,7 +33,13 @@ object MatchEngine {
         // Nos creamos una nueva lista ya que los parámetros de la función son inmutables en Kotlin
         val listaNodos = if (participantes.size % 2 != 0) { // En caso de jugadores impar, añadimos un jugador ficticio
             // Si es impar, sumamos el nodo de descanso
-            participantes + Participante(id = "SISTEMA_BYE", puntos = -1)
+            participantes + Participante(
+                id = "SISTEMA_BYE",
+                puntos = -1,
+                jugador = Jugador(
+                id = "SISTEMA_BYE",
+                nombreCompleto = "DESCANSO")
+            )
         } else {
             // Si es par, usamos la lista tal cual
             participantes

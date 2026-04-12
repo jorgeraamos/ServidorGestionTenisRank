@@ -7,5 +7,7 @@ import kotlinx.serialization.Serializable
 data class Participante(
     @SerialName("id_jugador") val id: String,
     @SerialName("puntos") val puntos: Int,
-    @SerialName("historial_rivales") val historialRivales: List<String> = emptyList()
+    @SerialName("historial_rivales") val historialRivales: List<String> = emptyList(),
+    @SerialName("partidos_jugados") val partidosJugados: Int = 0,
+    val jugador: Jugador // Se pondrán los datos del join (id, nombre_completo)
 )

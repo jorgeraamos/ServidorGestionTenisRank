@@ -2,6 +2,7 @@ package com.tennis.server.viewmodel
 
 import com.tennis.server.data.DataRepository
 import com.tennis.server.data.deleteJornada
+import com.tennis.server.data.getAllJornadas
 import com.tennis.server.data.getAllParticipantes
 import com.tennis.server.data.getAllRankings
 import com.tennis.server.data.getUltimaJornada
@@ -48,9 +49,12 @@ class AppViewModel {
         log("Iniciando Servidor de Tenis...")
         scope.launch {
             // Espera a que la base de datos se cargue ("await")
-            val data = repository.load()
-            _appData.value = data // Actualiza la UI
-            log("Datos cargados correctamente")
+//            val data = repository.load()
+//            _appData.value = data // Actualiza la UI
+//            log("Datos cargados correctamente")
+
+            _appData.value = AppData() // Carga los valores por defecto
+            log("Aplicación iniciada correctamente")
 
             // Cargamos los nombres de los rankings para el selector
             cargarRankings()
@@ -72,6 +76,48 @@ class AppViewModel {
         saveData() // Invoca la persistencia en disco
         log("Configuración actualizada: ${config.selectedRanking}")
 
+    }
+
+    // Cada vez que se selecciona una edición se actualizan los datos:
+    fun setEdicionActiva(edicion: Edicion?) {
+        scope.launch {
+            if (edicion == null) {
+                // Si no hay edición, limpiamos los datos dependientes
+                _appData.value = _appData.value.copy(
+                    config = _appData.value.config.copy(selectedEdicion = null, ultimaJornada = null),
+                    jornadas = emptyList(),
+                    partidos = emptyList(),
+                    participantes = emptyList() // O los participantes de esa edición
+                )
+                return@launch
+            }
+
+            try {
+                log("Cargando datos de la edición: ${edicion.nombre}")
+
+                // Llamamos a las funciones de supabase:
+                val (jornadas, partidos) = getAllJornadas(edicion.id)
+                val participantes = getAllParticipantes(edicion.id)
+                val ultima = jornadas.maxByOrNull { it.numero }
+
+                //Actualizamos los datos del AppData
+                _appData.value = _appData.value.copy(
+                    config = _appData.value.config.copy(
+                        selectedEdicion = edicion,
+                        ultimaJornada = ultima
+                    ),
+                    jornadas = jornadas,
+                    partidos = partidos,
+                    participantes = participantes
+                )
+                log("Datos de ${edicion.nombre} listos.")
+                if(participantes.isEmpty()){
+                    log("No hay participantes")
+                }
+            } catch (e: Exception) {
+                log("Error al cambiar de edición: ${e.message}")
+            }
+        }
     }
 
     private val _rankingsDisponibles = MutableStateFlow<List<Ranking>>(emptyList())
@@ -226,18 +272,12 @@ class AppViewModel {
     }
 
     // --- ACCIONES SOBRE JUGADORES ---
-    fun addJugador(jugador: Jugador) {
-        val current = _appData.value
-        _appData.value = current.copy(jugadores = current.jugadores + jugador)
-        saveData()
-        log("Jugador añadido: ${jugador.nombreCompleto}")
-    }
     
     fun removeJugador(id: String) {
         val current = _appData.value
-        val name = current.jugadores.find { it.id == id }?.nombreCompleto ?: id
+        val name = current.participantes.find { it.id == id }?.jugador?.nombreCompleto ?: id
         // Filtra para dejar todos excepto el que queremos borrar
-        _appData.value = current.copy(jugadores = current.jugadores.filter { it.id != id })
+        _appData.value = current.copy(participantes = current.participantes.filter { it.id != id })
         saveData()
         log("Jugador eliminado: $name")
     }

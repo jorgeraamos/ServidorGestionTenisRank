@@ -14,7 +14,7 @@ data class AppConfig(
 @Serializable
 data class AppData(
     val config: AppConfig = AppConfig(),
-    val jugadores: List<Jugador> = emptyList(),
+    val participantes: List<Participante> = emptyList(),
     val jornadas: List<Jornada> = emptyList(),
     val partidos: List<Partido> = emptyList(),
     val sets: List<SetTenis> = emptyList()

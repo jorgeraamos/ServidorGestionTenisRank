@@ -59,11 +59,46 @@ suspend fun getAllEdiciones(rankingId: Int): List<Edicion> {
     }
 }
 
+// funcion para obtener todas las jorndas de la edición seleccionada
+suspend fun getAllJornadas(idEdicion: Int): Pair<List<Jornada>, List<Partido>>{
+
+    val jornadas = try {
+        val response = client.postgrest["jornada"]
+            .select {
+                filter {
+                    // Filtramos por el ID del ranking y por el estado de las ediciones
+                    eq("id_edicion", idEdicion)
+                }
+            }
+        response.decodeList<Jornada>()
+    } catch (e: Exception) {
+        println("Error: ${e.message}")
+        emptyList()
+    }
+
+    // Cogemos todos los partidos de cada jornada:
+    // Usamos flatMap para convertir la lista de listas en una sola lista plana
+    val partidos = jornadas.flatMap { jornada ->
+        try {
+            client.postgrest["partido"]
+                .select { filter { eq("id_jornada", jornada.id) } }
+                .decodeList<Partido>()
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+            emptyList()
+        }
+    }
+    return Pair(jornadas, partidos)
+}
+
+
 // Una vez se ha seleccionado el ranking y su edicion, procedemos a coger todos los participantes.
 suspend fun getAllParticipantes(edicionId: Int): List<Participante> {
     return try {
         val response = client.postgrest["participa"]
-            .select(Columns.raw("id_jugador,puntos,historial_rivales")) {
+            .select(Columns.raw(
+                "id_jugador, puntos, partidos_jugados, historial_rivales, jugador(id, nombre_completo)")
+            ) {
                 filter {
                     eq("id_edicion", edicionId)
                 }
@@ -74,6 +109,7 @@ suspend fun getAllParticipantes(edicionId: Int): List<Participante> {
         emptyList()
     }
 }
+
 
 // Función para obtener la última jornada de la edición seleccionada
 suspend fun getUltimaJornada(idEdicion: Int): Jornada? {

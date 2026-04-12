@@ -78,10 +78,22 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     LaunchedEffect(selectedEdicion){
         if(selectedEdicion != null) {
             ultimaJornada = getUltimaJornada(selectedEdicion!!.id)
+            viewModel.updateConfig(config.copy(ultimaJornada = ultimaJornada))
+            viewModel.setEdicionActiva(selectedEdicion)
         }
         else{
             ultimaJornada = null
+            viewModel.updateConfig(config.copy(ultimaJornada = null))
         }
+    }
+
+    // Sincronización de estados locales cuando cambie el estado global (config)
+    LaunchedEffect(config) {
+        selectedRanking = config.selectedRanking
+        selectedEdicion = config.selectedEdicion
+        intervalo = config.intervaloJornadaDias.toFloat()
+        fechaInicio = config.fechaInicio
+        ultimaJornada = config.ultimaJornada
     }
 
 
@@ -106,7 +118,10 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                             opciones = opcionesRankings,
                             itemTexto = { it.nombre },
                             seleccionado = selectedRanking,
-                            onOptionSelected = { selectedRanking = it }
+                            onOptionSelected = {
+                                selectedRanking = it
+                                viewModel.updateConfig(config.copy(selectedRanking = it))
+                            }
                         )
                     }
 
@@ -117,7 +132,10 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                             opciones = opcionesEdicion,
                             itemTexto = { it.nombre },
                             seleccionado = selectedEdicion,
-                            onOptionSelected = { selectedEdicion = it }
+                            onOptionSelected = {
+                                selectedEdicion = it
+                                viewModel.updateConfig(config.copy(selectedEdicion = it))
+                            }
                         )
                     }
                 }

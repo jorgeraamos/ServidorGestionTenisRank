@@ -1,7 +1,7 @@
 {
     "config": {
         "intervaloJornadaDias": 7,
-        "fechaInicio": "2026-04-13",
+        "fechaInicio": "",
         "selectedRanking": {
             "id": 1,
             "nombre": "Ranking UPM",
@@ -18,7 +18,7 @@
         },
         "ultimaJornada": null
     },
-    "jugadores": [],
+    "participantes": [],
     "jornadas": [],
     "partidos": [],
     "sets": []
