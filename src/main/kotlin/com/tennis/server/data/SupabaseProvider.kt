@@ -153,13 +153,24 @@ suspend fun getAllSets(idsPartidos: List<String>): List<Set> {
 
 
 
-suspend fun insertJornada(nuevaJornada: Jornada, onLog: (String) -> Unit) {
+suspend fun insertJornada(nuevaJornada: Jornada, onLog: (String) -> Unit): Jornada {
 
-    try{
+    return try{
         // Insertamos en supabase la nueva jornada creada
-        client.postgrest["jornada"].insert(nuevaJornada)
+        val result = client.postgrest["jornada"].insert(nuevaJornada){
+            select()
+        }
+
+        val jornadaInsertada = result.decodeSingle<Jornada>()
+
+        onLog("Jornada ${jornadaInsertada.numero} insertada correctamente con ID: ${jornadaInsertada.id}")
+
+        // Retornamos la jornada insertada:
+        jornadaInsertada
+
     }catch (e : Exception){
         onLog("Error al insertar la nueva Jornada en supabase:  ${e.message} " )
+        throw e
     }
 }
 
@@ -192,6 +203,39 @@ suspend fun insertPartidos(partidosGenerados: List<Partido>, edicionId: Int, onL
 //    }catch (e : Exception){
 //        onLog("Error al actualizar el historial de los rivales de cada jugador:  ${e.message} " )
 //    }
+}
+
+suspend fun insertSets(partidosGenerados: List<Partido>, onLog: (String) -> Unit){
+    val partidosReales = partidosGenerados.filter {
+        it.idJugador1 != "SISTEMA_BYE" && it.idJugador2 != "SISTEMA_BYE"
+    }
+
+    // Creamos la lista donde guardaremos todos los sets de todos los partidos
+    val todosLosSets = mutableListOf<com.tennis.server.model.Set>()
+
+    for(partido in partidosReales){
+        for (numeroSet in 1..3) {
+            todosLosSets.add(
+                com.tennis.server.model.Set(
+                    id = java.util.UUID.randomUUID().toString(), // Generamos un ID único
+                    idPartido = partido.id,
+                    numeroSet = numeroSet,
+                    juegosJugador1 = 0,
+                    juegosJugador2 = 0
+                )
+            )
+        }
+    }
+
+    if(todosLosSets.isNotEmpty()){
+        try {
+            client.postgrest["set"].insert(todosLosSets)
+            onLog("Se han creado correctamente ${todosLosSets.size} sets para la jornada.")
+        } catch (e: Exception) {
+            onLog("Error al insertar los sets: ${e.message}")
+            e.printStackTrace()
+        }
+    }
 }
 
 // Función para actualizar el historial de rivales de un jugador

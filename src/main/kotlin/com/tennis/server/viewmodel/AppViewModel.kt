@@ -9,6 +9,7 @@ import com.tennis.server.data.getAllRankings
 import com.tennis.server.data.getUltimaJornada
 import com.tennis.server.data.insertJornada
 import com.tennis.server.data.insertPartidos
+import com.tennis.server.data.insertSets
 import com.tennis.server.data.updateJornada
 import com.tennis.server.engine.MatchEngine
 import com.tennis.server.engine.MatchEngine.generarEmparejamientos
@@ -162,7 +163,7 @@ class AppViewModel {
                 log("Iniciando proceso para la Edición: ${edicion.nombre}")
 
                 // Obtenenemos los participantes de la base de datos para la edicion seleccionada
-                val participantes = getAllParticipantes(edicion.id)
+                val participantes = currentData.participantes
 
                 // SE PODRÍA PONER UNA RESTRICCIÓN DEL NÚMERO DE PARTICIPANTES!!!
                 // Comprobamos que haya participantes en dicha edición
@@ -171,8 +172,10 @@ class AppViewModel {
                     return@launch
                 }
 
+                log("Participantes cargados")
+
                 // Creamos el objeto Jornada usando los datos de Config
-                val numeroJornada = config.ultimaJornada!!.numero + 1 // No puede ser null porque supabase no lo permite
+                val numeroJornada = (config.ultimaJornada?.numero ?: 0) + 1
                 val fechaInicioParsed = LocalDate.parse(config.fechaInicio)
                 val fechaFinParsed = fechaInicioParsed.plusDays(config.intervaloJornadaDias.toLong())
 
@@ -186,22 +189,28 @@ class AppViewModel {
                 )
 
                 // Insertamos la nueva jornada en Supabase
-                insertJornada(nuevaJornada) { mensaje -> log(mensaje)}
+                // Recogemos la jornadaInsertada que contiene el id real
+                val jornadaInsertada = insertJornada(nuevaJornada) { mensaje -> log(mensaje)}
+
+                log("Jornada introducida correctamente ")
 
                 // Ejecutamos el algoritmo de emparejamiento
                 log("Calculando emparejamientos óptimos...")
-                val partidos = generarEmparejamientos(participantes, nuevaJornada)
+                val partidos = generarEmparejamientos(participantes, jornadaInsertada)
 
                 // Insertamos los partidos en Supabase
 
                 insertPartidos(partidos, edicion.id) {mensaje -> log(mensaje)}
 
+
+                insertSets(partidos) {mensaje -> log(mensaje)}
+
                 // Actualizamos el estado local para que la UI se refresque sola
-                val nuevaConfig = config.copy(ultimaJornada = nuevaJornada)
+                val nuevaConfig = config.copy(ultimaJornada = jornadaInsertada)
 
                 _appData.value = currentData.copy(
                     config = nuevaConfig,
-                    jornadas = currentData.jornadas + nuevaJornada,
+                    jornadas = currentData.jornadas + jornadaInsertada,
                     partidos = currentData.partidos + partidos
                 )
 

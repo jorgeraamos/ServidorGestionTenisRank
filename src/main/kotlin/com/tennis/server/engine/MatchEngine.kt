@@ -86,13 +86,9 @@ object MatchEngine {
 
 
         // Una vez tenemos el matching, procedemos a generar los partidos:
-        return matching.edges.mapNotNull {edge ->
+        return matching.edges.map {edge ->
             val v1 = grafo.getEdgeSource(edge)
             val v2 = grafo.getEdgeTarget(edge)
-            // Si alguno de los dos es el sistema de descanso, no creamos un objeto Partido
-            if (v1 == "SISTEMA_BYE" || v2 == "SISTEMA_BYE") {
-                null
-            } else {
                 Partido(
                     idJugador1 = v1,
                     idJugador2 = v2,
@@ -101,7 +97,6 @@ object MatchEngine {
                     puntosIntercambiados = 0.0,
                     idJornada = jornada.id,
                 )
-            }
         }
 
     }

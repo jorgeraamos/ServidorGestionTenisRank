@@ -16,7 +16,14 @@
             "id_ranking": 1,
             "estado": "activo"
         },
-        "ultimaJornada": null
+        "ultimaJornada": {
+            "id": 4,
+            "id_edicion": 1,
+            "numero": 1,
+            "fecha_inicio": "2026-04-16",
+            "fecha_fin": "2026-04-23",
+            "estado": "Abierta"
+        }
     },
     "participantes": [],
     "jornadas": [],

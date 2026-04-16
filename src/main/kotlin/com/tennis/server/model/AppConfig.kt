@@ -17,5 +17,5 @@ data class AppData(
     val participantes: List<Participante> = emptyList(),
     val jornadas: List<Jornada> = emptyList(),
     val partidos: List<Partido> = emptyList(),
-    val sets: List<SetTenis> = emptyList()
+    val sets: List<Set> = emptyList()
 )
