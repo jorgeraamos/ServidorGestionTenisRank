@@ -98,18 +98,19 @@ object RankingEngine {
                         actualizarHistorialRivales(idEdicion, jugador2.id, jugador1.id)
                     }
                     tareas.add(tarea)
-                }
-                // Actualizamos tb el campo historial_rivales para el jugador que ha descansado
-                if (jugador1.id == "SISTEMA_BYE") {
-                    val tarea_actualizar = async {
-                        actualizarHistorialRivales(idEdicion, jugador2.id, jugador2.id)
+                }else {  // Si es un partido de descanso:
+                    // Actualizamos tb el campo historial_rivales para el jugador que ha descansado
+                    if (jugador1.id == "SISTEMA_BYE") {
+                        val tarea_actualizar = async {
+                            actualizarHistorialRivales(idEdicion, jugador2.id, jugador2.id)
+                        }
+                        tareas.add(tarea_actualizar)
+                    } else if (jugador2.id == "SISTEMA_BYE") {
+                        val tarea_actualizar = async {
+                            actualizarHistorialRivales(idEdicion, jugador1.id, jugador2.id)
+                        }
+                        tareas.add(tarea_actualizar)
                     }
-                    tareas.add(tarea_actualizar)
-                } else if (jugador2.id == "SISTEMA_BYE") {
-                    val tarea_actualizar = async {
-                        actualizarHistorialRivales(idEdicion, jugador1.id, jugador2.id)
-                    }
-                    tareas.add(tarea_actualizar)
                 }
             }
             tareas.awaitAll()
