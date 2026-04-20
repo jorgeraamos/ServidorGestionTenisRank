@@ -275,7 +275,7 @@ class AppViewModel {
                 log("Se han actualizado las puntuaciones correctamente")
 
                 // Llamamos a la función updateJornada de supabase
-                updateJornada(jornada.id) { mensaje -> log(mensaje) }
+                updateJornada(jornada) { mensaje -> log(mensaje) }
 
                 // Buscamos cuál es ahora la "nueva" última jornada de esa edición
                 val nuevaUltima = getUltimaJornada(currentData.config.selectedEdicion!!.id)

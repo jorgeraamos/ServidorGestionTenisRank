@@ -13,7 +13,12 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 
+
 import io.github.jan.supabase.storage.Storage
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import java.util.Collections.emptyList
 import java.util.Locale.filter
 import javax.management.Query.eq
@@ -279,17 +284,28 @@ suspend fun actualizarHistorialRivales(
 }
 
 // Función que se utilizará para cambiar el estado de una jornada para marcarla como finalizada
-suspend fun updateJornada(idJornada: Int, onLog: (String) -> Unit){
+suspend fun updateJornada(jornada: Jornada, onLog: (String) -> Unit){
     try {
+        val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val hoyString = hoy.toString() // Formato "yyyy-MM-dd"
+
         client.postgrest["jornada"].update(
             {
                 set("estado", "Finalizada")
+                // Nos aseguramos que las fechas de fin e inicio son coherentes
+                if(jornada.fechaFin != hoyString){
+                    set("fecha_fin", hoyString)
+                }
+                if (jornada.fechaInicio > hoyString){
+                    set("fecha_inicio", hoyString)
+                }
             }
         ) {
             filter {
-                eq("id", idJornada)
+                eq("id", jornada.id)
             }
         }
+
     }catch(e : Exception ){
         onLog("Error al actualizar el estado de la jornada: ${e.message}")
     }
