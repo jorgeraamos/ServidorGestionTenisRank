@@ -256,6 +256,13 @@ class AppViewModel {
         }
     }
 
+    fun reabrirJornada(jornada: Jornada){
+        scope.launch {
+            updateJornada(jornada, "Abierta") { mensaje -> log(mensaje) }
+            log("Jornada ${jornada.numero} reabierta")
+        }
+    }
+
     // Función para finalizar la jornada
     fun finalizarJornada(jornada : Jornada){
         scope.launch {
@@ -275,7 +282,7 @@ class AppViewModel {
                 log("Se han actualizado las puntuaciones correctamente")
 
                 // Llamamos a la función updateJornada de supabase
-                updateJornada(jornada) { mensaje -> log(mensaje) }
+                updateJornada(jornada, "Finalizada") { mensaje -> log(mensaje) }
 
                 // Buscamos cuál es ahora la "nueva" última jornada de esa edición
                 val nuevaUltima = getUltimaJornada(currentData.config.selectedEdicion!!.id)

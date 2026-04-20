@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tennis.server.data.updateJornada
 import com.tennis.server.model.Jornada
 import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
@@ -28,6 +30,9 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     val partidos = appData.partidos
     val participantes = appData.participantes
     val config = appData.config
+
+    // Dialogo para confirmar el finalizar una jornada:
+    var showConfirmDialog by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope() // Necesario para lanzar el Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
@@ -49,7 +54,17 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
             Button(
                 onClick = {
                     if(jornadaAFinalizar != null) {
-                        jornadaAFinalizar?.let { viewModel.finalizarJornada(it) }
+                        if(jornadaAFinalizar.estado != "Finalizada"){
+                            showConfirmDialog = true
+                        }
+                        else{
+                            scope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Error: La jornada no está activa",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
                     }else{
                         scope.launch {
                             snackbarHostState.showSnackbar(
@@ -60,10 +75,39 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                     }
             }
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = "Generar")
+                Icon(Icons.Default.Check, contentDescription = "Generar")
                 Spacer(Modifier.width(4.dp))
-                    Text("Finalizar Jornada ${jornadaAFinalizar?.numero ?: ""}")
+                Text("Finalizar Jornada ${jornadaAFinalizar?.numero ?: ""}")
             }
+        }
+        // Diálogo de confirmación para finalizar una jornada
+        if(showConfirmDialog){
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                title = {
+                    Text(text = "Confirmar cierre de jornada", fontWeight = FontWeight.Bold)
+                },
+                text = {
+                    Text("¿Estás seguro de que deseas finalizar la Jornada ${jornadaAFinalizar?.numero}? " +
+                            "Esta operación calculará los puntos de ranking y cerrará los resultados de forma permamente.")
+                },
+                confirmButton = {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFD32F2F)),
+                        onClick = {
+                            showConfirmDialog = false
+                            jornadaAFinalizar?.let { viewModel.finalizarJornada(it) }
+                        }
+                    ) {
+                        Text("Confirmar y Finalizar", color = Color.White)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
         
         Spacer(modifier = Modifier.height(16.dp))

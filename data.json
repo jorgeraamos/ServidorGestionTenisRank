@@ -21,7 +21,7 @@
             "id_edicion": 1,
             "numero": 2,
             "fecha_inicio": "2026-04-20",
-            "fecha_fin": "2026-04-27",
+            "fecha_fin": "2026-04-20",
             "estado": "Abierta"
         }
     },
@@ -731,7 +731,7 @@
             "id_edicion": 1,
             "numero": 2,
             "fecha_inicio": "2026-04-20",
-            "fecha_fin": "2026-04-27",
+            "fecha_fin": "2026-04-20",
             "estado": "Abierta"
         }
     ],

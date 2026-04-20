@@ -284,14 +284,14 @@ suspend fun actualizarHistorialRivales(
 }
 
 // Función que se utilizará para cambiar el estado de una jornada para marcarla como finalizada
-suspend fun updateJornada(jornada: Jornada, onLog: (String) -> Unit){
+suspend fun updateJornada(jornada: Jornada, estado: String, onLog: (String) -> Unit){
     try {
         val hoy = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         val hoyString = hoy.toString() // Formato "yyyy-MM-dd"
 
         client.postgrest["jornada"].update(
             {
-                set("estado", "Finalizada")
+                set("estado", estado)
                 // Nos aseguramos que las fechas de fin e inicio son coherentes
                 if(jornada.fechaFin != hoyString){
                     set("fecha_fin", hoyString)
