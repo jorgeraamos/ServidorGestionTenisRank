@@ -47,6 +47,9 @@ object RankingEngine {
                         else if (juegos_set_jugador1 < juegos_set_jugador2)
                             sets_jugador2 += 1
                     }
+                    if(sets_jugador1 == sets_jugador2){
+                        continue
+                    }
                     val puntos_jugador1 = jugador1.puntos
                     val puntos_jugador2 = jugador2.puntos
 
@@ -91,7 +94,9 @@ object RankingEngine {
                             jugador2.id,
                             idGanador,
                             nueva_puntuacion_jugador1,
-                            nueva_puntuacion_jugador2
+                            nueva_puntuacion_jugador2,
+                            jugador1.partidosJugados,
+                            jugador2.partidosJugados
                         )
                         // actualizamos también el campo historial_rivales
                         actualizarHistorialRivales(idEdicion, jugador1.id, jugador2.id)

@@ -246,7 +246,7 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                     // Botón Final de Guardado
                     Button(
                         onClick = {
-                            if (ultimaJornada == null || ultimaJornada?.estado == "finalizada") {
+                            if (ultimaJornada == null || ultimaJornada?.estado == "Finalizada") {
                                 // Le mandamos al ViewModel el nuevo objeto de configuración
                                 // para que se sobreescriba y se guarde de forma permanente.
                                 viewModel.updateConfig(

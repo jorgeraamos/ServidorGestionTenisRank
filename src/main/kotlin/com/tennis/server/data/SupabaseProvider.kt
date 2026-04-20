@@ -247,13 +247,13 @@ suspend fun actualizarHistorialRivales(
     try {
         // Buscamos el historial que tiene el jugador actualmente en la DB
         val participante = client.postgrest["participa"]
-            .select {
+            .select(Columns.raw("id_jugador, puntos, partidos_jugados, historial_rivales, jugador(id, nombre_completo)")) { // <--- AÑADIDO
                 filter {
                     eq("id_edicion", edicionId)
                     eq("id_jugador", jugadorId)
                 }
             }
-            .decodeSingle<Participante>() // Necesitas tener la data class Participante con @Serializable
+            .decodeSingle<Participante>()
 
         val historialActual = participante.historialRivales
 
@@ -283,7 +283,7 @@ suspend fun updateJornada(idJornada: Int, onLog: (String) -> Unit){
     try {
         client.postgrest["jornada"].update(
             {
-                set("estado", "finalizada")
+                set("estado", "Finalizada")
             }
         ) {
             filter {
@@ -303,13 +303,15 @@ suspend fun updatePuntuaciones(
     idJugador2: String,
     idGanador: String,
     puntosJugador1: Int,
-    puntosJugador2: Int
+    puntosJugador2: Int,
+    partidosJ1: Int,
+    partidosJ2: Int
     ){
     try {
         client.postgrest["partido"].update(
             {
                 set("id_ganador", idGanador)
-                set("estado", "jugado")
+                set("estado", "Jugado")
             }
         ) {
             filter {
@@ -324,6 +326,7 @@ suspend fun updatePuntuaciones(
         client.postgrest["participa"].update(
             {
                 set("puntos", puntosJugador1)
+                set("partidos_jugados", partidosJ1 + 1)
             }
         ) {
             filter {
@@ -339,6 +342,7 @@ suspend fun updatePuntuaciones(
         client.postgrest["participa"].update(
             {
                 set("puntos", puntosJugador2)
+                set("partidos_jugados", partidosJ2 +1)
             }
         ) {
             filter {
