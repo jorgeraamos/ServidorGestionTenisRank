@@ -99,8 +99,8 @@ fun ConfigPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
 
     // Layout principal en columna
     Column(modifier = modifier.padding(16.dp).fillMaxSize()) {
-        Text("Gestión de Jornadas", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
-        Text("Selecciona la competición para generar nuevos emparejamientos.", style = MaterialTheme.typography.body2, color = Color.Gray)
+        Text("Gestión de Jornadas", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = Color.White)
+        Text("Selecciona la competición para generar nuevos emparejamientos.", style = MaterialTheme.typography.body2, color = Color.White)
         Spacer(modifier = Modifier.height(24.dp))
 
         // Tarjeta envolvente para los campos

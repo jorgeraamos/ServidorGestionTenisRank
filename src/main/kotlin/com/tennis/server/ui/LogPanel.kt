@@ -33,7 +33,7 @@ fun LogPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Logs del Servidor", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+            Text("Logs del Servidor", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = Color.White)
             Button(onClick = { viewModel.clearLogs() }) {
                 Text("Limpiar Consola")
             }

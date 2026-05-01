@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -23,12 +24,12 @@ fun JugadoresPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
     val participantes = appData.participantes
 
     Column(modifier = modifier.padding(16.dp).fillMaxSize()) {
-        Text("Jugadores Registrados", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+        Text("Jugadores Registrados", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = Color.White)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         if (participantes.isEmpty()) {
-            Text("No hay jugadores registrados.", modifier = Modifier.padding(16.dp))
+            Text("No hay jugadores registrados.", modifier = Modifier.padding(16.dp), color = Color.White)
         } else {
             LazyColumn {
                 itemsIndexed(participantes) { index, participante ->

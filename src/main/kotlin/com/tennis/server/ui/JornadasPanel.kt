@@ -50,7 +50,7 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Jornadas", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+            Text("Jornadas", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = Color.White)
             Button(
                 onClick = {
                     if(jornadaAFinalizar != null) {
@@ -75,7 +75,7 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
                     }
             }
             ) {
-                Icon(Icons.Default.Check, contentDescription = "Generar")
+                Icon(Icons.Default.Check, contentDescription = "Finalizar")
                 Spacer(Modifier.width(4.dp))
                 Text("Finalizar Jornada ${jornadaAFinalizar?.numero ?: ""}")
             }
@@ -114,7 +114,7 @@ fun JornadasPanel(viewModel: AppViewModel, modifier: Modifier = Modifier) {
 
         // Se mostrarán todas las jornadas que se han creado de dicha edición y sus partidos:
         if (jornadas.isEmpty()) {
-            Text("No hay jornadas creadas.", modifier = Modifier.padding(16.dp))
+            Text("No hay jornadas creadas.", modifier = Modifier.padding(16.dp), color = Color.White)
         } else {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 items(jornadas.reversed()) { jornada ->

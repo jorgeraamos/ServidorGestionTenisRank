@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 // Debemos hacer esta función usando genéricos para no perder el objeto que se selecciona.
@@ -38,10 +39,15 @@ fun <T> SelectorOpcionesGenerico(
             value = seleccionado?.let { itemTexto(it) } ?: "",
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
+            label = { Text(label, color = Color.White) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
             modifier = Modifier.menuAnchor().fillMaxWidth(),
-            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedTrailingIconColor = Color.White,
+                unfocusedTrailingIconColor = Color.White
+            )
         )
 
         ExposedDropdownMenu(

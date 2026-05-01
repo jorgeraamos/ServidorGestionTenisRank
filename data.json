@@ -897,100 +897,10 @@
             "id_jornada": 5
         },
         {
-            "id": "051e52f2-2e1b-495a-943f-00a1f511fec9",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "7162d2fc-d425-46ee-8f6c-6c2bd74fc2e0",
-            "id_jugador2": "15490016-7ad6-4fa1-9e1a-4a656d700224",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "c173d69b-7a52-435d-8369-aae67c763348",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "a896e6d2-30ed-4e43-a0ce-f6d43a487ea2",
-            "id_jugador2": "811d1dac-aca1-46fa-b78b-3a8ef33b60cf",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "ba97078d-3876-4266-8ec8-4170011ab850",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "493da52d-060f-4abc-874b-5285dbf3eb03",
-            "id_jugador2": "07b72eb8-fef6-4b7a-a65e-46389fa87866",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "1daf0731-e814-449d-a968-5334a74235ce",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "b3ebd27c-30cf-4ccc-9844-cb8f010b07ba",
-            "id_jugador2": "a050d6dc-b093-4bc0-bcd1-a4b80940a27b",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "2333ff7c-c215-444e-888a-032f4fcf10d2",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "3bfac1f3-a3ca-42aa-a602-4e6a9e5c041a",
-            "id_jugador2": "7a5e2602-4e8b-41fd-9928-5f98c509cdf5",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "8441faa0-acf6-4f98-a5fc-0365312b3568",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "11c8f79e-b4bc-4c34-bbda-933c69ff023a",
-            "id_jugador2": "3aab7752-9c9d-4375-b843-a49c1207cf22",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "daff5ff1-6007-4df1-8b4d-bc1e78ac0ff6",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "694eb2be-4170-4baa-8d24-e498494e9082",
-            "id_jugador2": "77d7646f-d268-4b15-9dcc-3c206a826119",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "80d93648-9921-4e20-a570-1bffbafb2b3c",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "a0631ef3-143b-4466-a6f6-0a2c5532caad",
-            "id_jugador2": "d99bf380-2dcb-4cc8-89a1-36ec18554374",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
             "id": "b55da95a-83f6-4dac-a927-3f2ac428fa4a",
             "creado_at": "2026-04-20T11:10:19.951772+00:00",
             "id_jugador1": "c04f1072-9ff1-401c-9627-4d3c13e7e1e8",
             "id_jugador2": "413b2509-d4b5-4873-89bd-ac624268f32d",
-            "estado": "Pendiente de jugar",
-            "id_ganador": null,
-            "puntos_intercambiados": null,
-            "id_jornada": 5
-        },
-        {
-            "id": "1b97777e-ccae-495c-b1cd-1993e3047ed6",
-            "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "0d2a08d7-525e-4d3d-b69c-2fdf2f40ae3b",
-            "id_jugador2": "b936b3f7-b4ae-4ec4-bef6-6465dee66cc5",
             "estado": "Pendiente de jugar",
             "id_ganador": null,
             "puntos_intercambiados": null,
@@ -1011,17 +921,17 @@
             "creado_at": "2026-04-20T11:10:19.951772+00:00",
             "id_jugador1": "d016b4b5-b893-40d5-a81c-2845eec77bfd",
             "id_jugador2": "24a1afee-9eb3-4418-b453-8ce3253acc23",
-            "estado": "Pendiente de jugar",
+            "estado": "Jugado",
             "id_ganador": null,
             "puntos_intercambiados": null,
             "id_jornada": 5
         },
         {
-            "id": "9e4f6447-b158-4689-bfea-c723a2a103dd",
+            "id": "80d93648-9921-4e20-a570-1bffbafb2b3c",
             "creado_at": "2026-04-20T11:10:19.951772+00:00",
-            "id_jugador1": "84895e42-1ed7-471a-ab41-4ad0517d1a33",
-            "id_jugador2": "61136fc5-e508-4b0a-a631-ddf1670f35e3",
-            "estado": "Pendiente de jugar",
+            "id_jugador1": "a0631ef3-143b-4466-a6f6-0a2c5532caad",
+            "id_jugador2": "d99bf380-2dcb-4cc8-89a1-36ec18554374",
+            "estado": "Jugado",
             "id_ganador": null,
             "puntos_intercambiados": null,
             "id_jornada": 5
@@ -1031,7 +941,97 @@
             "creado_at": "2026-04-20T11:10:19.951772+00:00",
             "id_jugador1": "116236a5-9dd1-4363-a855-4cb9d7bfbd6d",
             "id_jugador2": "fc1fc659-8521-4949-963f-494d8a6f1683",
-            "estado": "Pendiente de jugar",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "ba97078d-3876-4266-8ec8-4170011ab850",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "493da52d-060f-4abc-874b-5285dbf3eb03",
+            "id_jugador2": "07b72eb8-fef6-4b7a-a65e-46389fa87866",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "2333ff7c-c215-444e-888a-032f4fcf10d2",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "3bfac1f3-a3ca-42aa-a602-4e6a9e5c041a",
+            "id_jugador2": "7a5e2602-4e8b-41fd-9928-5f98c509cdf5",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "1b97777e-ccae-495c-b1cd-1993e3047ed6",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "0d2a08d7-525e-4d3d-b69c-2fdf2f40ae3b",
+            "id_jugador2": "b936b3f7-b4ae-4ec4-bef6-6465dee66cc5",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "051e52f2-2e1b-495a-943f-00a1f511fec9",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "7162d2fc-d425-46ee-8f6c-6c2bd74fc2e0",
+            "id_jugador2": "15490016-7ad6-4fa1-9e1a-4a656d700224",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "c173d69b-7a52-435d-8369-aae67c763348",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "a896e6d2-30ed-4e43-a0ce-f6d43a487ea2",
+            "id_jugador2": "811d1dac-aca1-46fa-b78b-3a8ef33b60cf",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "daff5ff1-6007-4df1-8b4d-bc1e78ac0ff6",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "694eb2be-4170-4baa-8d24-e498494e9082",
+            "id_jugador2": "77d7646f-d268-4b15-9dcc-3c206a826119",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "9e4f6447-b158-4689-bfea-c723a2a103dd",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "84895e42-1ed7-471a-ab41-4ad0517d1a33",
+            "id_jugador2": "61136fc5-e508-4b0a-a631-ddf1670f35e3",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "1daf0731-e814-449d-a968-5334a74235ce",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "b3ebd27c-30cf-4ccc-9844-cb8f010b07ba",
+            "id_jugador2": "a050d6dc-b093-4bc0-bcd1-a4b80940a27b",
+            "estado": "Jugado",
+            "id_ganador": null,
+            "puntos_intercambiados": null,
+            "id_jornada": 5
+        },
+        {
+            "id": "8441faa0-acf6-4f98-a5fc-0365312b3568",
+            "creado_at": "2026-04-20T11:10:19.951772+00:00",
+            "id_jugador1": "11c8f79e-b4bc-4c34-bbda-933c69ff023a",
+            "id_jugador2": "3aab7752-9c9d-4375-b843-a49c1207cf22",
+            "estado": "Jugado",
             "id_ganador": null,
             "puntos_intercambiados": null,
             "id_jornada": 5
