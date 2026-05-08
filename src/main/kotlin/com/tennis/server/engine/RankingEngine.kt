@@ -10,6 +10,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 object RankingEngine {
 
@@ -68,20 +69,20 @@ object RankingEngine {
                     if (sets_jugador1 > sets_jugador2) {
                         val peso_welo =
                             juegos_jugador1.toDouble() / (juegos_jugador1.toDouble() + juegos_jugador2.toDouble())
-                        val puntos_intercambiados = k * (1 - expectativa_AB) * peso_welo
+                        val puntos_intercambiados = (k * (1 - expectativa_AB) * peso_welo).roundToInt()
                         nueva_puntuacion_jugador1 =
-                            (puntos_jugador1 + puntos_intercambiados).toInt()
+                            (puntos_jugador1 + puntos_intercambiados)
                         nueva_puntuacion_jugador2 =
-                            (puntos_jugador2 - puntos_intercambiados).toInt()
+                            (puntos_jugador2 - puntos_intercambiados)
                         idGanador = jugador1.id
                     } else {
                         val peso_welo =
                             juegos_jugador2.toDouble() / (juegos_jugador1.toDouble() + juegos_jugador2.toDouble())
-                        val puntos_intercambiados = k * (1 - (1 - expectativa_AB)) * peso_welo
+                        val puntos_intercambiados = (k * (1 - (1 - expectativa_AB)) * peso_welo).roundToInt()
                         nueva_puntuacion_jugador1 =
-                            (puntos_jugador1 - puntos_intercambiados).toInt()
+                            (puntos_jugador1 - puntos_intercambiados)
                         nueva_puntuacion_jugador2 =
-                            (puntos_jugador2 + puntos_intercambiados).toInt()
+                            (puntos_jugador2 + puntos_intercambiados)
                         idGanador = jugador2.id
                     }
 
