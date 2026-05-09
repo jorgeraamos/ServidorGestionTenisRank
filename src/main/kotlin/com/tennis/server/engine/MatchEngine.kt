@@ -74,7 +74,8 @@ object MatchEngine {
                     }
                 // Añadimos una penalización si ambos jugadores se han enfrentado recientemente
                 // Nótese que esto incluye al jugador que representa la jornada de descanso
-                peso += if (participante2.id in participante1.historialRivales) penalizacion else 0.0
+                peso += if (participante2.id in participante1.historialRivales || participante1.id in participante2.historialRivales)
+                    penalizacion else 0.0
                 grafo.setEdgeWeight(edge, peso)
             }
         }
