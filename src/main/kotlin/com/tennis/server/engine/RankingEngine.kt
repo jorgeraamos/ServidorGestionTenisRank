@@ -114,17 +114,17 @@ object RankingEngine {
                     actualizarHistorialRivales(idEdicion, jugador2.id, jugador1.id)
                 }
                 tareas.add(tarea)
+            }
 
-                // Miramos ahora si ha habido un jugador que haya descansado este jornada:
-                // Para ello filtramos los participantes que no estén en el conjunto de IDs que han jugado un partido:
-                val jugadoresDescanso = participantes.filter { it.id !in idsJugadoresConPartido }
-                for (jugador in jugadoresDescanso) {
-                    val tareaDescanso = async {
-                        // Para marcar el descanso en el historial ponemos en el id de SISTEMA_BYE
-                        actualizarHistorialRivales(idEdicion, jugador.id, "SISTEMA_BYE")
-                    }
-                    tareas.add(tareaDescanso)
+            // Miramos ahora si ha habido un jugador que haya descansado en dicha jornada:
+            // Para ello filtramos los participantes que no estén en el conjunto de IDs que han jugado un partido:
+            val jugadoresDescanso = participantes.filter { it.id !in idsJugadoresConPartido }
+            for (jugador in jugadoresDescanso) {
+                val tareaDescanso = async {
+                    // Para marcar el descanso en el historial ponemos en el id de SISTEMA_BYE
+                    actualizarHistorialRivales(idEdicion, jugador.id, "SISTEMA_BYE")
                 }
+                tareas.add(tareaDescanso)
             }
             tareas.awaitAll()
         }

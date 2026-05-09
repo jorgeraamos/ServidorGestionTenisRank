@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Participante(
+    @SerialName("id_edicion") val idEdicion: Int,
     @SerialName("id_jugador") val id: String,
     @SerialName("puntos") val puntos: Int,
     @SerialName("historial_rivales") val historialRivales: List<String> = emptyList(),

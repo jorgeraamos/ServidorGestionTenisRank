@@ -2,6 +2,7 @@ package com.tennis.server.data
 import com.tennis.server.data.SupabaseClient.client
 import com.tennis.server.model.Edicion
 import com.tennis.server.model.Jornada
+import com.tennis.server.model.Jugador
 import com.tennis.server.model.Participante
 import com.tennis.server.model.Partido
 import com.tennis.server.model.Ranking
@@ -12,13 +13,14 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
-
-
 import io.github.jan.supabase.storage.Storage
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.put
 import java.util.Collections.emptyList
 import java.util.Locale.filter
 import javax.management.Query.eq
@@ -103,7 +105,7 @@ suspend fun getAllParticipantes(edicionId: Int): List<Participante> {
     return try {
         val response = client.postgrest["participa"]
             .select(Columns.raw(
-                "id_jugador, puntos, partidos_jugados, historial_rivales, jugador(id, nombre_completo)")
+                "id_edicion, id_jugador, puntos, partidos_jugados, historial_rivales, jugador(id, nombre_completo)")
             ) {
                 filter {
                     eq("id_edicion", edicionId)
@@ -156,6 +158,67 @@ suspend fun getAllSets(idsPartidos: List<String>): List<Set> {
     }
 }
 
+suspend fun getJugadoresLibres(onLog: (String) -> Unit): List<Jugador> {
+    // Obtenemos todas las ediciones que estén en activo:
+    val idsEdicionesActivas = try {
+        val response = client.postgrest["edicion"]
+            .select(Columns.list("id")) {  // Solo necesitamos los ids
+                filter {
+                    eq("estado", "activo")
+                }
+            }
+        response.decodeList<Map<String, Int>>().map { it["id"] ?: -1 }
+    } catch (e: Exception) {
+        println("Error al obtener las ediciones activas: ${e.message}")
+        emptyList()
+    }
+
+    if (idsEdicionesActivas.isEmpty()) onLog("Actualmente no hay ediciones activas en el sistema")
+
+    val listaJugadores = try {
+        val response = client.postgrest["jugador"]
+            .select {
+            }
+        response.decodeList<Jugador>()
+    } catch (e: Exception) {
+        println("Error cargando jugadores: ${e.message}")
+        emptyList()
+    }
+
+    if(listaJugadores.isEmpty()) onLog("No se han encontrado jugadores en el sistema")
+
+    val listaParticipantes = try {
+        val response = client.postgrest["participa"]
+            .select(
+                Columns.raw(
+                    "id_edicion, id_jugador, puntos, partidos_jugados, historial_rivales, jugador(id, nombre_completo)"
+                )
+            )
+        response.decodeList<Participante>()
+    } catch (e: Exception) {
+        println("Error cargando participantes: ${e.message}")
+        emptyList()
+    }
+
+    if(listaParticipantes.isEmpty()) onLog("No hay jugadores participando en otras ediciones ")
+
+
+    val participantesActivos = listaParticipantes.filter { participante ->
+        participante.idEdicion in idsEdicionesActivas
+    }
+
+    // Extraemos los IDs de los jugadores que ya están participando en ediciones activas
+    // Usamos un Set para que el filtrado posterior sea mucho más rápido
+    val idsJugadoresOcupados = participantesActivos.map { it.id }.toSet()
+
+    // Retornamos la lista de jugadores cuyo id NO esté en el conjunto de participantes que están activos en otra edición
+    val listaJugadoresLibres = listaJugadores.filter { jugador ->
+        jugador.id !in idsJugadoresOcupados }
+
+    if(listaJugadoresLibres.isEmpty())  onLog("No hay jugadores libres en el sistema ")
+
+    return listaJugadoresLibres
+}
 
 
 suspend fun insertJornada(nuevaJornada: Jornada, onLog: (String) -> Unit): Jornada {
@@ -191,23 +254,6 @@ suspend fun insertPartidos(partidosGenerados: List<Partido>, edicionId: Int, onL
     }catch(e : Exception){
         onLog("Error al insertar los partidos en supabase:  ${e.message} " )
     }
-
-//    try {
-//        // Actualizamos el historial de los rivales para cada jugador
-//        partidosGenerados.forEach { partido ->
-//            // Si el jugador1 es real, le añadimos al jugador2 (sea real o BYE)
-//            if (partido.idJugador1 != "SISTEMA_BYE") {
-//                actualizarHistorialRivales(edicionId, partido.idJugador1, partido.idJugador2)
-//            }
-//
-//            // Lo mismo para el jugador2
-//            if (partido.idJugador2 != "SISTEMA_BYE") {
-//                actualizarHistorialRivales(edicionId, partido.idJugador2, partido.idJugador1)
-//            }
-//        }
-//    }catch (e : Exception){
-//        onLog("Error al actualizar el historial de los rivales de cada jugador:  ${e.message} " )
-//    }
 }
 
 suspend fun insertSets(partidosGenerados: List<Partido>, onLog: (String) -> Unit){
@@ -240,6 +286,23 @@ suspend fun insertSets(partidosGenerados: List<Partido>, onLog: (String) -> Unit
             onLog("Error al insertar los sets: ${e.message}")
             e.printStackTrace()
         }
+    }
+}
+
+suspend fun insertParticipante(idEdicion: Int, idJugador: String, puntosIniciales: Int, onLog: (String) -> Unit){
+    try{
+        // Creamos un objeto JSON explícito para poder insertar un nuevo registro en la tabla participa
+        val nuevoParticipanteJson = buildJsonObject {
+            put("id_edicion", idEdicion)
+            put("id_jugador", idJugador)
+            put("puntos", puntosIniciales)
+            put("partidos_jugados", 0)
+            putJsonArray("historial_rivales") {}
+        }
+        // Insertamos en la tabla participa al nuevo jugador seleccionado:
+        client.postgrest["participa"].insert(nuevoParticipanteJson)
+    }catch(e : Exception){
+        onLog("Error al insertar el nuevo participante en supabase:  ${e.message} " )
     }
 }
 
@@ -386,6 +449,21 @@ suspend fun deleteJornada(idJornada: Int, onLog: (String) -> Unit){
         onLog("Error al eliminar la jornada ${e.message}")
     }
 
+}
+
+// Funcion para eliminar a un participante de la edicion:
+suspend fun deleteParticipante(idEdicion: Int, idJugador: String, onLog: (String) -> Unit) {
+    try {
+        client.postgrest["participa"].delete {
+            filter {
+                eq("id_edicion", idEdicion)
+                eq("id_jugador", idJugador)
+            }
+        }
+        onLog("Participante eliminado de la edición con éxito.")
+    } catch (e: Exception) {
+        onLog("Error al dar de baja al jugador: ${e.message}")
+    }
 }
 
 

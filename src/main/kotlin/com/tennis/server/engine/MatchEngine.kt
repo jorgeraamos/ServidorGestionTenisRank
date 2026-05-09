@@ -34,6 +34,7 @@ object MatchEngine {
         val listaNodos = if (participantes.size % 2 != 0) { // En caso de jugadores impar, añadimos un jugador ficticio
             // Si es impar, sumamos el nodo de descanso
             participantes + Participante(
+                idEdicion = -1,
                 id = "SISTEMA_BYE",
                 puntos = -1,
                 jugador = Jugador(

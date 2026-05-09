@@ -1,11 +1,14 @@
 package com.tennis.server.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.tennis.server.data.DataRepository
 import com.tennis.server.data.actualizarHistorialRivales
 import com.tennis.server.data.deleteJornada
 import com.tennis.server.data.getAllJornadas
 import com.tennis.server.data.getAllParticipantes
 import com.tennis.server.data.getAllRankings
+import com.tennis.server.data.getJugadoresLibres
 import com.tennis.server.data.getUltimaJornada
 import com.tennis.server.data.insertJornada
 import com.tennis.server.data.insertPartidos
@@ -22,6 +25,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.collections.emptyList
+import androidx.compose.runtime.getValue
+import com.tennis.server.data.deleteParticipante
+import com.tennis.server.data.insertParticipante
 
 /**
  * AppViewModel funciona como el "Cerebro" de la aplicación.
@@ -44,6 +51,8 @@ class AppViewModel {
     private val _logs = MutableStateFlow<List<String>>(emptyList())
     val logs: StateFlow<List<String>> = _logs.asStateFlow()
 
+    var jugadoresLibres by mutableStateOf<List<Jugador>>(emptyList())
+        private set
 
     /**
      * Bloque INIT: Se ejecuta en cuanto la aplicación arranca.
@@ -72,6 +81,33 @@ class AppViewModel {
         _logs.value = _logs.value + "[$timestamp] $message"
     }
 
+    /**
+     * Función centralizada para cargar/refrescar todos los datos de una edición específica
+     */
+    private suspend fun cargarDatosEdicion(edicion: Edicion) {
+        try {
+            log("Actualizando datos de la edición: ${edicion.nombre}")
+
+            // Llamadas a Supabase (ya las tienes en tu código)
+            val (jornadas, partidos) = getAllJornadas(edicion.id)
+            val participantes = getAllParticipantes(edicion.id)
+            val ultima = jornadas.maxByOrNull { it.numero }
+
+            // Actualizamos el estado reactivo
+            _appData.value = _appData.value.copy(
+                config = _appData.value.config.copy(
+                    selectedEdicion = edicion,
+                    ultimaJornada = ultima
+                ),
+                jornadas = jornadas,
+                partidos = partidos,
+                participantes = participantes
+            )
+        } catch (e: Exception) {
+            log("Error al cargar datos: ${e.message}")
+        }
+    }
+
     // --- ACCIONES DE CONFIGURACIÓN ---
     fun updateConfig(config: AppConfig) {
         val current = _appData.value // Copia inmutable del estado actual
@@ -94,32 +130,8 @@ class AppViewModel {
                 )
                 return@launch
             }
-
-            try {
-                log("Cargando datos de la edición: ${edicion.nombre}")
-
-                // Llamamos a las funciones de supabase:
-                val (jornadas, partidos) = getAllJornadas(edicion.id)
-                val participantes = getAllParticipantes(edicion.id)
-                val ultima = jornadas.maxByOrNull { it.numero }
-
-                //Actualizamos los datos del AppData
-                _appData.value = _appData.value.copy(
-                    config = _appData.value.config.copy(
-                        selectedEdicion = edicion,
-                        ultimaJornada = ultima
-                    ),
-                    jornadas = jornadas,
-                    partidos = partidos,
-                    participantes = participantes
-                )
-                log("Datos de ${edicion.nombre} listos.")
-                if(participantes.isEmpty()){
-                    log("No hay participantes")
-                }
-            } catch (e: Exception) {
-                log("Error al cambiar de edición: ${e.message}")
-            }
+            // Recargamos los datos automaticamente
+            cargarDatosEdicion(edicion)
         }
     }
 
@@ -306,13 +318,22 @@ class AppViewModel {
 
     // --- ACCIONES SOBRE JUGADORES ---
     
-    fun removeJugador(id: String) {
-        val current = _appData.value
-        val name = current.participantes.find { it.id == id }?.jugador?.nombreCompleto ?: id
-        // Filtra para dejar todos excepto el que queremos borrar
-        _appData.value = current.copy(participantes = current.participantes.filter { it.id != id })
-        saveData()
-        log("Jugador eliminado: $name")
+    fun removeJugador(participante: Participante) {
+        scope.launch {
+            try {
+                val edicion = _appData.value.config.selectedEdicion ?: return@launch
+
+                // Eliminamos al jugador de la tabla participa en la base de datos
+                deleteParticipante(edicion.id, participante.id) { mensaje -> log(mensaje) }
+
+                // Refrescamos los datos de la edición para que desaparezca de la lista
+                cargarDatosEdicion(edicion)
+
+                log("El jugador ${participante.jugador.nombreCompleto} ha sido dado de baja de la edición ${edicion.nombre}")
+            } catch (e: Exception) {
+                log("Error crítico al procesar la baja del jugador ${participante.jugador.nombreCompleto}: ${e.message}")
+            }
+        }
     }
 
     fun clearLogs() {
@@ -323,6 +344,53 @@ class AppViewModel {
     private fun saveData() {
         scope.launch {
             repository.save(_appData.value)
+        }
+    }
+
+    fun cargarJugadoresLibres() {
+        scope.launch { // Usamos el scope del ViewModel
+            try {
+                val currentData = _appData.value
+                val edicion = currentData.config.selectedEdicion
+
+                if(edicion == null){
+                    log("Error: No se ha seleccionado ninguna edición")
+                    return@launch
+                }
+                // Llamamos a la función que conecta con supabase
+                val resultado = getJugadoresLibres() { mensaje -> log(mensaje) }
+                jugadoresLibres = resultado // Actualizamos el estado
+            } catch (e: Exception) {
+                log("Error al cargar jugadores libres: ${e.message}")
+            }
+        }
+    }
+
+    fun inscribirJugador(jugador: Jugador) {
+        scope.launch {
+            try {
+                val currentData = _appData.value
+                val edicion = currentData.config.selectedEdicion
+                val ultimoJugador = currentData.participantes.last()
+                val puntosIniciales = (currentData.participantes.lastOrNull()?.puntos?.minus(1)) ?: 1200
+                if (edicion == null) {
+                    log("Error: No se ha seleccionado ninguna edición")
+                    return@launch
+                }
+                insertParticipante(
+                    edicion.id,
+                    jugador.id,
+                    puntosIniciales
+                ) { mensaje -> log(mensaje) }
+
+                // Refrescamos los datos
+                cargarDatosEdicion(edicion)
+
+                log("Jugador ${jugador.nombreCompleto} inscrito con éxito")
+
+            } catch (e: Exception) {
+                log("Error al insertar el nuevo participante ${jugador.nombreCompleto}: ${e.message}")
+            }
         }
     }
 }
